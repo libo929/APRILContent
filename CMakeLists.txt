@@ -45,7 +45,6 @@ FOREACH( INPUT_DIR ${INPUT_DIRS} )
     FILE (GLOB_RECURSE INPUT_DIR_SRCS ./src/${INPUT_DIR}/*.cc )
     SOURCE_GROUP("Source files\\${INPUT_DIR}" FILES ${INPUT_DIR_SRCS} )
     LIST(APPEND ArborContent_SRCS ${INPUT_DIR_SRCS})
-	MESSAGE( STATUS "FILE: " ${INPUT_DIR_SRCS})
 ENDFOREACH()
 
 ### C++11 check #############################################################
