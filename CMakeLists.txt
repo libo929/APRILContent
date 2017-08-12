@@ -29,21 +29,24 @@ MESSAGE( STATUS "INSTALL_DOC : ${INSTALL_DOC}" )
 #include directories
 INCLUDE_DIRECTORIES( ./include )
 
-AUX_SOURCE_DIRECTORY( ./src/ ArborContent_SRCS )
-AUX_SOURCE_DIRECTORY( ./src/ArborApi ArborContent_SRCS )
-AUX_SOURCE_DIRECTORY( ./src/ArborObjects ArborContent_SRCS )
-AUX_SOURCE_DIRECTORY( ./src/ArborCheating ArborContent_SRCS )
-AUX_SOURCE_DIRECTORY( ./src/ArborClustering ArborContent_SRCS )
-AUX_SOURCE_DIRECTORY( ./src/ArborHelpers ArborContent_SRCS )
-AUX_SOURCE_DIRECTORY( ./src/ArborMonitoring ArborContent_SRCS )
-AUX_SOURCE_DIRECTORY( ./src/ArborPfoConstruction ArborContent_SRCS )
-AUX_SOURCE_DIRECTORY( ./src/ArborParticleId ArborContent_SRCS )
-AUX_SOURCE_DIRECTORY( ./src/ArborPlugins ArborContent_SRCS )
-AUX_SOURCE_DIRECTORY( ./src/ArborReclustering ArborContent_SRCS )
-AUX_SOURCE_DIRECTORY( ./src/ArborTools ArborContent_SRCS )
-AUX_SOURCE_DIRECTORY( ./src/ArborTopologicalAssociation ArborContent_SRCS )
-AUX_SOURCE_DIRECTORY( ./src/ArborTrackClusterAssociation ArborContent_SRCS )
-AUX_SOURCE_DIRECTORY( ./src/ArborUtility ArborContent_SRCS )
+SET( INPUT_DIRS 
+     ArborApi ArborObjects ArborCheating ArborClustering ArborHelpers ArborMonitoring ArborPfoConstruction ArborParticleId 
+     ArborPlugins ArborReclustering ArborTools ArborTopologicalAssociation ArborTrackClusterAssociation ArborUtility )
+
+FILE(GLOB INPUT_DIR_INCS ./include/*.h)
+SOURCE_GROUP("Header files" FILES ${INPUT_DIR_INCS} )
+LIST(APPEND ArborContent_INCS ${INPUT_DIR_INCS})
+
+FOREACH( INPUT_DIR ${INPUT_DIRS} )
+    FILE(GLOB_RECURSE INPUT_DIR_INCS ./include/${INPUT_DIR}/*.h)
+    SOURCE_GROUP("Header files\\${INPUT_DIR}" FILES ${INPUT_DIR_INCS} )
+    LIST(APPEND ArborContent_INCS ${INPUT_DIR_INCS})
+
+    FILE (GLOB_RECURSE INPUT_DIR_SRCS ./src/${INPUT_DIR}/*.cc )
+    SOURCE_GROUP("Source files\\${INPUT_DIR}" FILES ${INPUT_DIR_SRCS} )
+    LIST(APPEND ArborContent_SRCS ${INPUT_DIR_SRCS})
+	MESSAGE( STATUS "FILE: " ${INPUT_DIR_SRCS})
+ENDFOREACH()
 
 ### C++11 check #############################################################
 
@@ -115,7 +118,7 @@ ENDIF()
 ### LIBRARY #################################################################
 
 # add library
-ADD_LIBRARY( ${PROJECT_NAME} SHARED ${ArborContent_SRCS} )
+ADD_LIBRARY( ${PROJECT_NAME} SHARED ${ArborContent_SRCS} ${ArborContent_INCS})
 SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES VERSION ${${PROJECT_NAME}_VERSION} SOVERSION ${${PROJECT_NAME}_SOVERSION})
 
 IF( ARBOR_PARALLEL )
