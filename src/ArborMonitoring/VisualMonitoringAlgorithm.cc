@@ -35,6 +35,7 @@
 #include <TEveElement.h>
 #include <TEveArrow.h>
 #include <TEveManager.h>
+#include <TGLViewer.h>
 #endif
 
 namespace arbor_content
@@ -140,6 +141,22 @@ namespace arbor_content
     for (pandora::StringVector::const_iterator iter = m_vertexListNames.begin(), iterEnd = m_vertexListNames.end(); iter != iterEnd; ++iter)
     {
       this->VisualizeVertexList(*iter);
+    }
+      
+    // Set the background color. The one set in Pandora is white.
+    if(m_darkBackground)
+    {
+        TEveManager* pEveManager = TEveManager::Create();
+        if(NULL != pEveManager)
+        {
+            TGLViewer *pTGLViewer = pEveManager->GetDefaultGLViewer();
+            if(NULL != pTGLViewer) 
+            {
+                std::cout << "Set the bg color..." << std::endl;
+                pTGLViewer->ColorSet().Background().SetColor(kBlack);
+                pTGLViewer->UpdateScene();
+            }
+        }
     }
 
     // Finally, display the event and pause application
@@ -632,6 +649,11 @@ namespace arbor_content
 
     PANDORA_RETURN_RESULT_IF_AND_IF(pandora::STATUS_CODE_SUCCESS, pandora::STATUS_CODE_NOT_FOUND, !=, pandora::XmlHelper::ReadValue(xmlHandle,
         "ShowPfoHierarchy", m_showPfoHierarchy));
+      
+    m_darkBackground = true;
+      
+    PANDORA_RETURN_RESULT_IF_AND_IF(pandora::STATUS_CODE_SUCCESS, pandora::STATUS_CODE_NOT_FOUND, !=, pandora::XmlHelper::ReadValue(xmlHandle,
+        "DarkBackground", m_darkBackground));
 
     PANDORA_RETURN_RESULT_IF_AND_IF(pandora::STATUS_CODE_SUCCESS, pandora::STATUS_CODE_NOT_FOUND, !=, pandora::XmlHelper::ReadVectorOfValues(xmlHandle,
         "SuppressMCParticles", m_suppressMCParticles));
