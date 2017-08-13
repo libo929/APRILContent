@@ -39,14 +39,12 @@ namespace arbor_content
 
   pandora::StatusCode CaloHitTimingAlgorithm::Run()
   {
-	std::cout << "timing:  " << m_timing << std::endl;
-	std::cout << "time cut:  " << m_timeCut << std::endl;
 
 
     const pandora::CaloHitList *pCaloHitList = NULL;
     PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, PandoraContentApi::GetCurrentList(*this, pCaloHitList));
 
-	std::cout << "****************** CaloHitTimingAlgorithm pCaloHitList size: " << pCaloHitList->size() << std::endl;
+	std::cout << "  ---> CaloHit list size: " << pCaloHitList->size() << std::endl;
 
 #if 0
     for(pandora::CaloHitList::const_iterator iter = pCaloHitList->begin(), endIter = pCaloHitList->end() ;
@@ -85,7 +83,7 @@ namespace arbor_content
 		}
 
 		// Save the current list in a list with the specified new name
-		std::cout << "calo hit list: " << caloHitList.size() << ", late hit list: " << caloLateHitList.size() << std::endl;
+		//std::cout << "calo hit list: " << caloHitList.size() << ", late hit list: " << caloLateHitList.size() << std::endl;
 
 		//std::string caloHitName0("hahaList");
 		//PandoraContentApi::GetCurrentListName<pandora::CaloHit>(*this, caloHitName0);
@@ -100,7 +98,7 @@ namespace arbor_content
 		PandoraContentApi::SaveList<pandora::CaloHitList>(*this, caloLateHitList, caloLateHitName);
     
 		PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, PandoraContentApi::GetCurrentList(*this, pCaloHitList)); 
-		std::cout << "****************** pCaloHitList size after timing: " << pCaloHitList->size() << std::endl;
+		std::cout << "  ---> CaloHit list size after timing: " << pCaloHitList->size() << std::endl;
 	}
 
     return pandora::STATUS_CODE_SUCCESS;
@@ -109,7 +107,10 @@ namespace arbor_content
 
   pandora::StatusCode CaloHitTimingAlgorithm::Initialize()
   {
-	  std::cout << "********* CaloHitTimingAlgorithm init ********" << std::endl;
+      std::cout << "timing:  "   << m_timing  << std::endl;
+      std::cout << "time cut:  " << m_timeCut << std::endl;
+      
+	  //std::cout << "********* CaloHitTimingAlgorithm init ********" << std::endl;
 	  caloHitsMonitor = new TNtupleD("calohits", "calohits", "x:y:z:t");
     
 	  return pandora::STATUS_CODE_SUCCESS;
@@ -117,10 +118,10 @@ namespace arbor_content
 
   CaloHitTimingAlgorithm::~CaloHitTimingAlgorithm()
   {
-	  std::cout << "********* CaloHitTimingAlgorithm destructor ********" << std::endl;
+	  //std::cout << "********* CaloHitTimingAlgorithm destructor ********" << std::endl;
 	  //if(caloHitsMonitor != NULL) delete caloHitsMonitor;
 
-	  Algorithm::~Algorithm();
+      pandora::Algorithm::~Algorithm();
   }
 
   //------------------------------------------------------------------------------------------------------------------------------------------
