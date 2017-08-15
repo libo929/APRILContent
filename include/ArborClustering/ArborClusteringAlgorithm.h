@@ -98,6 +98,7 @@ private:
 	ConnectorAlgorithmToolVector      m_additionalToolList;        ///< The addtional algorithm tool list
 	bool                              m_allowSingleHitClusters;    ///< Whether to allow single calo hit clusters
 	bool                              m_useMultithread;            ///< Whether to use multithreading with ecal-hcal-muon tools
+	ConnectorAlgorithmToolVector      m_testToolList;        
 };
 
 //------------------------------------------------------------------------------------------------------------------------------------------

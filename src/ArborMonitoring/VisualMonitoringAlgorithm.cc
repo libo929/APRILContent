@@ -152,7 +152,6 @@ namespace arbor_content
             TGLViewer *pTGLViewer = pEveManager->GetDefaultGLViewer();
             if(NULL != pTGLViewer) 
             {
-                std::cout << "Set the bg color..." << std::endl;
                 pTGLViewer->ColorSet().Background().SetColor(kBlack);
                 pTGLViewer->UpdateScene();
             }
