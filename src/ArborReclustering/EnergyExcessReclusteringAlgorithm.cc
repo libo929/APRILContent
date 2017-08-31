@@ -98,6 +98,8 @@ namespace arbor_content
         std::string reclusterClusterListName;
         PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, ArborContentApi::RunReclusteringAlgorithm(*this,
             *clusteringAlgIter, pReclusterClusterList, reclusterClusterListName));
+            
+        //std::cout << "reclusterListName: " << reclusterClusterListName << std::endl;
 
 		//std::cout << "pReclusterClusterList is empty: " << pReclusterClusterList->empty() << std::endl;
         if(pReclusterClusterList->empty())
@@ -110,6 +112,8 @@ namespace arbor_content
 
 		//Bo: build the association betweeen track and cluster
         PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, PandoraContentApi::RunDaughterAlgorithm(*this, m_trackClusterAssociationAlgName));
+        
+        //std::cout << "------------------- >>>>> monitoring name: " << m_monitoringAlgorithmName << std::endl;
 
         // run monitoring algorithm if provided
         if(!m_monitoringAlgorithmName.empty())

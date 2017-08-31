@@ -38,7 +38,6 @@ namespace arbor_content
 
   pandora::StatusCode ArborClusteringAlgorithm::Run()
   {
-    std::cout << "test list size: " << m_testToolList.size() << std::endl;
     const pandora::CaloHitList *pCaloHitList = NULL;
     PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, PandoraContentApi::GetCurrentList(*this, pCaloHitList));
 
@@ -48,9 +47,9 @@ namespace arbor_content
     pandora::CaloHitList ecalCaloHitList, hcalCaloHitList, muonCaloHitList;
     PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, this->SplitCaloHitList(pCaloHitList, ecalCaloHitList, hcalCaloHitList, muonCaloHitList));
 
-	std::cout << "  ---> Ecal CaloHit list: " << ecalCaloHitList.size() << std::endl;
-	std::cout << "  ---> Hcal CaloHit list: " << hcalCaloHitList.size() << std::endl;
-	std::cout << "  ---> Muon CaloHit list: " << muonCaloHitList.size() << std::endl;
+	//std::cout << "  ---> Ecal CaloHit list: " << ecalCaloHitList.size() << std::endl;
+	//std::cout << "  ---> Hcal CaloHit list: " << hcalCaloHitList.size() << std::endl;
+	//std::cout << "  ---> Muon CaloHit list: " << muonCaloHitList.size() << std::endl;
 
     PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, this->ConnectCaloHits(pCaloHitList, ecalCaloHitList, hcalCaloHitList, muonCaloHitList));
     PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, this->CreateClusters());
@@ -154,16 +153,11 @@ namespace arbor_content
 
   pandora::StatusCode ArborClusteringAlgorithm::ConnectCaloHits(const pandora::CaloHitList &caloHitList, const ConnectorAlgorithmToolVector &toolVector) const
   {
-    std::cout << "  ---> ConnectCaloHit: CaloHitList size: " << caloHitList.size() << std::endl;
-    std::cout << "  ---> Tool size: " << toolVector.size() << std::endl;
-      
     for(ConnectorAlgorithmToolVector::const_iterator iter = toolVector.begin(), endIter = toolVector.end() ;
         endIter != iter ; ++iter)
     {
       ConnectorAlgorithmTool *pTool = *iter;
-      std::cout << "     ---> Tool: " << pTool << std::endl;
       PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, pTool->Process(*this, &caloHitList));
-      std::cout << "          tool done." << std::endl;
     }
 
     return pandora::STATUS_CODE_SUCCESS;
@@ -173,7 +167,6 @@ namespace arbor_content
 
   pandora::StatusCode ArborClusteringAlgorithm::CreateClusters() const
   {
-      std::cout << "********** CreateClusters" << std::endl;
     if( m_ecalToolList.empty() && m_hcalToolList.empty() && m_muonToolList.empty() && m_additionalToolList.empty() )
       return pandora::STATUS_CODE_SUCCESS;
 
@@ -181,11 +174,13 @@ namespace arbor_content
     pandora::CaloHitList seedCaloHitList;
     PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, CaloHitHelper::ExtractCurrentSeedCaloHitList(*this, seedCaloHitList, !m_allowSingleHitClusters));
       
-#if 1
-      std::string listName;
-      const pandora::ClusterList* clusterList = NULL;
-      PandoraContentApi::CreateTemporaryListAndSetCurrent(*this, clusterList, listName);
-#endif
+    std::string listName;
+    const pandora::ClusterList* clusterList = NULL;
+    
+    if(m_useAsIndependent)
+    {
+        PandoraContentApi::CreateTemporaryListAndSetCurrent(*this, clusterList, listName);
+    }
 
     for(pandora::CaloHitList::iterator iter = seedCaloHitList.begin(), endIter = seedCaloHitList.end() ;
         endIter != iter ; ++iter)
@@ -213,19 +208,25 @@ namespace arbor_content
       PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, PandoraContentApi::Cluster::Create(*this, clusterParameters, pCluster));
     }
       
-      
-#if 1
-    std::cout << "new tmp list name: " << listName << std::endl;
-      
-    const pandora::ClusterList *pCurrentClusterList = NULL;
-    PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, PandoraContentApi::GetCurrentList(*this, pCurrentClusterList));
-    std::cout << "cluster size: " << pCurrentClusterList->size() << std::endl;
-      
-    // PandoraContentApi::ReplaceCurrentList<pandora::Cluster>(*this, listName);
-    std::string newClusterName("photonCluster");
-    PandoraContentApi::SaveList<pandora::Cluster>(*this, newClusterName);
-    PandoraContentApi::ReplaceCurrentList<pandora::Cluster>(*this, newClusterName);
-#endif
+    if(m_useAsIndependent)
+    {
+        //std::cout << "new tmp list name: " << listName << std::endl;
+          
+        std::string newClusterName("ArborClusteringAlgClusters");
+        std::stringstream ss;
+        ss << this;
+        newClusterName = newClusterName + "_" + ss.str();
+          
+        // save the current list to the list with new name
+        PandoraContentApi::SaveList<pandora::Cluster>(*this, newClusterName);
+          
+        // 
+        PandoraContentApi::ReplaceCurrentList<pandora::Cluster>(*this, newClusterName);
+          
+        const pandora::ClusterList *pCurrentClusterList = NULL;
+        PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, PandoraContentApi::GetCurrentList(*this, pCurrentClusterList));
+        std::cout << "  ---> Current cluster list size: " << pCurrentClusterList->size() << std::endl;
+    }
 
     return pandora::STATUS_CODE_SUCCESS;
   }
@@ -322,11 +323,11 @@ namespace arbor_content
       std::cout << "Multi-threading disabled" << std::endl;
       m_useMultithread = false;
     }
+    
+    m_useAsIndependent = false;
+    PANDORA_RETURN_RESULT_IF_AND_IF(pandora::STATUS_CODE_SUCCESS, pandora::STATUS_CODE_NOT_FOUND, !=, pandora::XmlHelper::ReadValue(xmlHandle,
+        "UseAsIndependent", m_useAsIndependent));
       
-    std::cout << "ecal: " << m_ecalToolList.size() << std::endl;
-    std::cout << "hcal: " << m_hcalToolList.size() << std::endl;
-    std::cout << "muon: " << m_muonToolList.size() << std::endl;
-    std::cout << "addi: " << m_additionalToolList.size() << std::endl;
 
     return pandora::STATUS_CODE_SUCCESS;
   }

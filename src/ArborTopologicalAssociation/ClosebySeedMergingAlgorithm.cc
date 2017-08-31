@@ -38,9 +38,11 @@ namespace arbor_content
   pandora::StatusCode ClosebySeedMergingAlgorithm::Run()
   {
     const pandora::ClusterList *pClusterList = NULL;
-    PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, PandoraContentApi::GetCurrentList(*this, pClusterList));
+    std::string clusterName;
+      
+    PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, PandoraContentApi::GetCurrentList(*this, pClusterList, clusterName));
 
-	//std::cout << "pClusterList: " << pClusterList->size() << std::endl;
+	//std::cout << "pClusterList: " << pClusterList->size() << ", name: " << clusterName << std::endl;
     if(pClusterList->empty())
       return pandora::STATUS_CODE_SUCCESS;
 
