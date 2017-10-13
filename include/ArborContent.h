@@ -101,6 +101,7 @@
 #include "ArborUtility/ListMergingAlgorithm.h"
 #include "ArborUtility/CaloHitPreparationAlgorithm.h"
 #include "ArborUtility/CaloHitTimingAlgorithm.h"
+#include "ArborUtility/ClusterCheckAlgorithm.h"
 #include "ArborUtility/IsolatedHitClusteringAlgorithm.h"
 
 /** 
@@ -151,6 +152,7 @@ public:
     d("AlgorithmConfiguration",              arbor_content::AlgorithmConfiguration::Factory) \
     d("CaloHitPreparation",                  arbor_content::CaloHitPreparationAlgorithm::Factory) \
     d("CaloHitTiming",                       arbor_content::CaloHitTimingAlgorithm::Factory) \
+    d("ClusterCheck",                        arbor_content::ClusterCkeckAlgorithm::Factory) \
     d("IsolatedHitClustering",               arbor_content::IsolatedHitClusteringAlgorithm::Factory)
 
 
