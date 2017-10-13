@@ -57,50 +57,6 @@ namespace arbor_content
 	}
 #endif
 
-	if(m_timing) 
-	{
-		// a calo hit list for early hits
-		pandora::CaloHitList caloHitList;
-
-		// a calo hit list for late hits
-		pandora::CaloHitList caloLateHitList;
-	
-
-		for(pandora::CaloHitList::iterator iter = pCaloHitList->begin(); iter != pCaloHitList->end(); ++iter)
-		{
-			float hitTime = (*iter)->GetTime();
-			const pandora::CartesianVector& hitPos  = (*iter)->GetPositionVector();
-#if 0
-			std::cout << "hit time: " << hitTime << std::endl;
-#endif
-
-			caloHitsMonitor->Fill(hitPos.GetX(), hitPos.GetY(), hitPos.GetZ(), hitTime);
-
-			if(hitTime < m_timeCut)
-				caloHitList.insert(*iter);
-			else
-				caloLateHitList.insert(*iter);
-		}
-
-		// Save the current list in a list with the specified new name
-		//std::cout << "calo hit list: " << caloHitList.size() << ", late hit list: " << caloLateHitList.size() << std::endl;
-
-		//std::string caloHitName0("hahaList");
-		//PandoraContentApi::GetCurrentListName<pandora::CaloHit>(*this, caloHitName0);
-		//PandoraContentApi::DropCurrentList<pandora::CaloHit>(*this);
-		//std::cout << "name: " << caloHitName0 << std::endl;
-
-		std::string caloHitName("HitsAfterTiming");
-		PandoraContentApi::SaveList<pandora::CaloHitList>(*this, caloHitList, caloHitName);
-		PandoraContentApi::ReplaceCurrentList<pandora::CaloHit>(*this, caloHitName);
-
-		std::string caloLateHitName("LateHits");
-		PandoraContentApi::SaveList<pandora::CaloHitList>(*this, caloLateHitList, caloLateHitName);
-    
-		PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, PandoraContentApi::GetCurrentList(*this, pCaloHitList)); 
-		std::cout << "  ---> CaloHit list size after timing: " << pCaloHitList->size() << std::endl;
-	}
-
     return pandora::STATUS_CODE_SUCCESS;
   }
 
@@ -111,17 +67,8 @@ namespace arbor_content
       std::cout << "time cut:  " << m_timeCut << std::endl;
       
 	  //std::cout << "********* ClusterCheckAlgorithm init ********" << std::endl;
-	  caloHitsMonitor = new TNtupleD("calohits", "calohits", "x:y:z:t");
     
 	  return pandora::STATUS_CODE_SUCCESS;
-  }
-
-  ClusterCheckAlgorithm::~CaloHitTimingAlgorithm()
-  {
-	  //std::cout << "********* ClusterCheckAlgorithm destructor ********" << std::endl;
-	  //if(caloHitsMonitor != NULL) delete caloHitsMonitor;
-
-      pandora::Algorithm::~Algorithm();
   }
 
   //------------------------------------------------------------------------------------------------------------------------------------------

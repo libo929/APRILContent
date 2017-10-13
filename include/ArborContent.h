@@ -152,7 +152,7 @@ public:
     d("AlgorithmConfiguration",              arbor_content::AlgorithmConfiguration::Factory) \
     d("CaloHitPreparation",                  arbor_content::CaloHitPreparationAlgorithm::Factory) \
     d("CaloHitTiming",                       arbor_content::CaloHitTimingAlgorithm::Factory) \
-    d("ClusterCheck",                        arbor_content::ClusterCkeckAlgorithm::Factory) \
+    d("ClusterCheck",                        arbor_content::ClusterCheckAlgorithm::Factory) \
     d("IsolatedHitClustering",               arbor_content::IsolatedHitClusteringAlgorithm::Factory)
 
 
