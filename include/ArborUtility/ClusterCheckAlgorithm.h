@@ -53,8 +53,6 @@ public:
         pandora::Algorithm *CreateAlgorithm() const;
     };
 
-	~ClusterCheckAlgorithm();
-
 private:
     pandora::StatusCode Run();
     pandora::StatusCode ReadSettings(const pandora::TiXmlHandle xmlHandle);
@@ -71,8 +69,7 @@ private:
 
 inline pandora::Algorithm *ClusterCheckAlgorithm::Factory::CreateAlgorithm() const
 {
-	ClusterCheckAlgorithm * algo = new ClusterCheckAlgorithm();
-	return algo;
+	return new ClusterCheckAlgorithm();
 }
 
 } 
