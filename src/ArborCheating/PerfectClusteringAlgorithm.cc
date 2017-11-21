@@ -80,6 +80,7 @@ namespace arbor_content
       }
     }
 
+	std::cout << "mcParticleToHitListMap size: " << mcParticleToHitListMap.size() << std::endl;
     this->CreateClusters(mcParticleToHitListMap);
 
     return STATUS_CODE_SUCCESS;
@@ -165,8 +166,11 @@ namespace arbor_content
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  void PerfectClusteringAlgorithm::CreateClusters(const MCParticleToHitListMap &mcParticleToHitListMap) const
+  StatusCode PerfectClusteringAlgorithm::CreateClusters(const MCParticleToHitListMap &mcParticleToHitListMap) const
   {
+	const ClusterList *pClusterList = NULL; std::string clusterListName;
+	PandoraContentApi::CreateTemporaryListAndSetCurrent(*this, pClusterList, clusterListName);
+
     for (MCParticleToHitListMap::const_iterator iter = mcParticleToHitListMap.begin(), iterEnd = mcParticleToHitListMap.end(); 
         iter != iterEnd; ++iter)
     {
@@ -200,6 +204,15 @@ namespace arbor_content
       }
       delete pCaloHitList;
     }
+
+	std::string cluName("perfectClusters");
+    if (!pClusterList->empty())
+    {
+      PANDORA_RETURN_RESULT_IF(STATUS_CODE_SUCCESS, !=, PandoraContentApi::SaveList<Cluster>(*this, cluName));
+      PANDORA_RETURN_RESULT_IF(STATUS_CODE_SUCCESS, !=, PandoraContentApi::ReplaceCurrentList<Cluster>(*this, cluName));
+    }
+
+	return STATUS_CODE_SUCCESS;
   }
 
   //------------------------------------------------------------------------------------------------------------------------------------------

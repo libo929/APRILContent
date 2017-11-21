@@ -223,10 +223,11 @@ namespace arbor_content
         // 
         PandoraContentApi::ReplaceCurrentList<pandora::Cluster>(*this, newClusterName);
           
-        const pandora::ClusterList *pCurrentClusterList = NULL;
-        PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, PandoraContentApi::GetCurrentList(*this, pCurrentClusterList));
-        std::cout << "  ---> Current cluster list size: " << pCurrentClusterList->size() << std::endl;
     }
+
+    const pandora::ClusterList *pCurrentClusterList = NULL;
+    PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, PandoraContentApi::GetCurrentList(*this, pCurrentClusterList));
+    std::cout << "  ---> Current cluster list size: " << pCurrentClusterList->size() << std::endl;
 
     return pandora::STATUS_CODE_SUCCESS;
   }

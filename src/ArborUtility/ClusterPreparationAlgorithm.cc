@@ -43,7 +43,7 @@ pandora::StatusCode ClusterPreparationAlgorithm::Run()
 
         pandora::ClusterList clustersToSave;
 
-		//std::cout << "the name of clusters: " << *iter << ", size: " << pClusterList->size() << std::endl;
+		std::cout << "the name of clusters: " << *iter << ", size: " << pClusterList->size() << std::endl;
         for (pandora::ClusterList::const_iterator clusterIter = pClusterList->begin(), clusterIterEnd = pClusterList->end(); clusterIter != clusterIterEnd; ++clusterIter)
         {
             if ((*clusterIter)->IsAvailable())

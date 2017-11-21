@@ -32,6 +32,7 @@
 #include "ArborApi/ArborContentApi.h"
 #include "ArborObjects/CaloHit.h"
 #include "ArborHelpers/GeometryHelper.h"
+#include "ArborHelpers/ReclusterHelper.h"
 
 
 namespace arbor_content
@@ -39,21 +40,78 @@ namespace arbor_content
 
   pandora::StatusCode ClusterCheckAlgorithm::Run()
   {
+    const pandora::ClusterList *pClusterList = NULL;
+    PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, PandoraContentApi::GetCurrentList(*this, pClusterList));
 
+	std::cout << "  ---> Cluster list size: " << pClusterList->size() << std::endl;
 
-    const pandora::CaloHitList *pCaloHitList = NULL;
-    PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, PandoraContentApi::GetCurrentList(*this, pCaloHitList));
-
-	std::cout << "  ---> CaloHit list size: " << pCaloHitList->size() << std::endl;
-
-#if 0
-    for(pandora::CaloHitList::const_iterator iter = pCaloHitList->begin(), endIter = pCaloHitList->end() ;
+    for(pandora::ClusterList::const_iterator iter = pClusterList->begin(), endIter = pClusterList->end() ;
         endIter != iter ; ++iter)
     {
-        const arbor_content::CaloHit *const pCaloHit(dynamic_cast<const arbor_content::CaloHit *>(*iter));
-		const pandora::CartesianVector position(pCaloHit->GetPositionVector());
-		std::cout << "hit position: " << " " << position.GetX() << " " << position.GetY() << " " << position.GetZ() 
-			      << " time: " << pCaloHit->GetTime() << std::endl;
+		const pandora::Cluster* cluster = *iter;
+		const pandora::TrackList& trackList = cluster->GetAssociatedTrackList();
+
+        //unsigned int nTrackAssociations(trackList.size());
+        //if((nTrackAssociations < m_minTrackAssociations) || (nTrackAssociations > m_maxTrackAssociations)) return false;
+
+        float trackEnergySum(0.);
+
+        for (pandora::TrackList::const_iterator trackIter = trackList.begin(), trackIterEnd = trackList.end(); 
+            trackIter != trackIterEnd; ++trackIter)
+        {   
+          trackEnergySum += (*trackIter)->GetEnergyAtDca();
+        }   
+
+        if(trackEnergySum < 1.) continue;
+
+        const float chi(ReclusterHelper::GetTrackClusterCompatibility(this->GetPandora(), cluster, trackList));
+
+		if(std::fabs(chi)>2) {
+			std::cout << "chi: " << chi << ", cluster energy: " << cluster->GetHadronicEnergy() 
+				      << ", track E: " << trackEnergySum << std::endl; 
+		}
+
+		//if(trackList.size()>0)
+		//std::cout << "cluster E: " << cluster->GetHadronicEnergy() << ", track E: " << trackEnergy << std::endl;
+	}
+
+#if 1
+	/////////////////////////
+	// check tracks in PFOs
+    const pandora::PfoList *pPfoList = NULL; 
+    PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, PandoraContentApi::GetCurrentList(*this, pPfoList));
+
+    for(pandora::PfoList::const_iterator iter = pPfoList->begin(), endIter = pPfoList->end(); endIter != iter ; ++iter)
+    {
+		const pandora::ParticleFlowObject* pfo = *iter;
+
+		const pandora::TrackList& pfoTrackList = pfo->GetTrackList();
+		const pandora::ClusterList& pfoClusterList = pfo->GetClusterList();
+
+		float clustersEnergy = 0.;
+		float tracksEnergy = 0.;
+
+		for(pandora::TrackList::const_iterator trackIter = pfoTrackList.begin(); trackIter != pfoTrackList.end(); ++trackIter)
+		{
+			const pandora::Track* track = *trackIter;
+			float trackEnergy = track->GetEnergyAtDca();
+
+			tracksEnergy += trackEnergy;
+		}
+
+		for(pandora::ClusterList::const_iterator clusterIter = pfoClusterList.begin(); clusterIter != pfoClusterList.end(); ++clusterIter)
+		{
+			const pandora::Cluster* cluster = *clusterIter;
+			float clusterEnergy = cluster->GetHadronicEnergy();
+
+			clustersEnergy += clusterEnergy;
+		}
+#if 1
+
+		//const float chi(ReclusterHelper::GetTrackClusterCompatibility(this->GetPandora(), clustersEnergy, tracksEnergy));
+		//if(fabs(chi)>2) 
+		std::cout << "=======> track - cluster energy: " << tracksEnergy << " : " << clustersEnergy << std::endl;
+#endif
 	}
 #endif
 
@@ -63,8 +121,8 @@ namespace arbor_content
 
   pandora::StatusCode ClusterCheckAlgorithm::Initialize()
   {
-      std::cout << "timing:  "   << m_timing  << std::endl;
-      std::cout << "time cut:  " << m_timeCut << std::endl;
+      //std::cout << "timing:  "   << m_timing  << std::endl;
+      //std::cout << "time cut:  " << m_timeCut << std::endl;
       
 	  //std::cout << "********* ClusterCheckAlgorithm init ********" << std::endl;
     

@@ -237,6 +237,10 @@ namespace arbor_content
         std::cout << "FragmentRemovalAlgorithm: additional cluster list '" << *iter << "' is not available" << std::endl;
         continue;
       }
+	  else
+	  {
+		  std::cout << "FragmentRemovalAlgorithm: additional cluster list '" << *iter << "' size: " << pAdditionalClusterList->size() << std::endl;
+	  }
 
       clusterList.insert(pAdditionalClusterList->begin(), pAdditionalClusterList->end());
     }

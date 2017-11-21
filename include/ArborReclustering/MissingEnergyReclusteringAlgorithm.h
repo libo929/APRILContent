@@ -62,7 +62,7 @@ private:
 	pandora::StatusCode ReclusterCluster(pandora::ClusterVector& clusterVector,
 			                             pandora::ClusterList&   photonList);
   
-	bool ShouldReclusterCluster(const pandora::Cluster *const pCluster);
+	bool ShouldReclusterCluster(const pandora::Cluster *const pCluster, float& trackEnergy);
 	bool IsBestReclustering(const std::string reclusterClusterListName);
 
     pandora::StatusCode SearchNearbyClusters(pandora::ClusterVector& clusterVector, 
@@ -72,6 +72,8 @@ private:
 	pandora::StatusCode ReAssociateTrackCluster();
 	pandora::StatusCode TidyClusters(pandora::ClusterVector& clusterVector,
 			                         pandora::ClusterList&   photonList);
+
+	pandora::StatusCode CheckClusters();
   
 
 private:

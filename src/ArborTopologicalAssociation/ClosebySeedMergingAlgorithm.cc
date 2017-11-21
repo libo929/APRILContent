@@ -42,7 +42,7 @@ namespace arbor_content
       
     PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, PandoraContentApi::GetCurrentList(*this, pClusterList, clusterName));
 
-	//std::cout << "pClusterList: " << pClusterList->size() << ", name: " << clusterName << std::endl;
+	std::cout << "pClusterList: " << pClusterList->size() << ", name: " << clusterName << std::endl;
     if(pClusterList->empty())
       return pandora::STATUS_CODE_SUCCESS;
 
@@ -171,7 +171,7 @@ namespace arbor_content
       }
     }
 
-#if 0
+#if 1
     const pandora::ClusterList *pClusterList = NULL;
     PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, PandoraContentApi::GetCurrentList(*this, pClusterList));
 

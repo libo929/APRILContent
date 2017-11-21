@@ -59,7 +59,9 @@ namespace arbor_content
      *  @param  pInputClusterList the input cluster list
      *  @param  photonClusters the photons list to receive
      */
-    pandora::StatusCode SelectPhotonsAndRemoveOthers(const pandora::ClusterList *const pInputClusterList, pandora::ClusterList &photonClusters);
+    pandora::StatusCode SelectPhotonsAndRemoveOthers(const pandora::ClusterList *const pInputClusterList, 
+			pandora::ClusterList &photonClusters,
+			pandora::ClusterList &nonPhotonClusters);
 
   private:
     std::string     m_clusteringAlgorithmName;      ///< The name of the clustering algorithm to run

@@ -41,6 +41,7 @@
 #include "ArborCheating/CheatingTrackToClusterMatching.h"
 #include "ArborCheating/PerfectParticleFlowAlgorithm.h"
 #include "ArborCheating/PerfectClusteringAlgorithm.h"
+#include "ArborCheating/PerfectFragmentRemovalAlgorithm.h"
 
 #include "ArborClustering/ArborClusteringAlgorithm.h"
 #include "ArborClustering/ClusteringParentAlgorithm.h"
@@ -54,6 +55,7 @@
 #include "ArborHelpers/SortingHelper.h"
 #include "ArborHelpers/BDTBasedClusterIdHelper.h"
 #include "ArborHelpers/ClusterPropertiesFillingHelper.h"
+#include "ArborHelpers/ClusterTrackEnergyFillingHelper.h"
 
 #include "ArborMonitoring/VisualMonitoringAlgorithm.h"
 #include "ArborMonitoring/PerformanceMonitoringAlgorithm.h"
@@ -114,6 +116,7 @@ public:
 #define ARBOR_ALGORITHM_LIST(d) \
     d("PerfectParticleFlow",                 arbor_content::PerfectParticleFlowAlgorithm::Factory) \
     d("PerfectClustering",                   arbor_content::PerfectClusteringAlgorithm::Factory) \
+    d("PerfectFragmentRemoval",              arbor_content::PerfectFragmentRemovalAlgorithm::Factory) \
     d("CheatingTrackToClusterMatching",      arbor_content::CheatingTrackToClusterMatching::Factory) \
     d("ArborClustering",                     arbor_content::ArborClusteringAlgorithm::Factory) \
     d("ClusteringParent",                    arbor_content::ClusteringParentAlgorithm::Factory) \

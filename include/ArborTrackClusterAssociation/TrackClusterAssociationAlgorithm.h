@@ -138,6 +138,8 @@ private:
 
 	bool                           m_allowMultiAssociations;       ///< Whether to allow multi track associations for a single cluster
 	bool                           m_useEnergyCompatibility;       ///< Whether to use energy information for association
+
+	bool                           m_usePhotonClusters;
 };
 
 //------------------------------------------------------------------------------------------------------------------------------------------

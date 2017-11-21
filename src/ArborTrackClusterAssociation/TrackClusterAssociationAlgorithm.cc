@@ -48,7 +48,7 @@ namespace arbor_content
     if(trackList.empty() || clusterList.empty())
       return pandora::STATUS_CODE_SUCCESS;
 
-	//std::cout << "clusterList size: " << clusterList.size() << std::endl;
+	std::cout << "----> clusterList size: " << clusterList.size() << std::endl;
 	//std::cout << "trackList size: " << trackList.size() << std::endl;
     // reset the track-cluster associations
     PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, PandoraContentApi::RemoveCurrentTrackClusterAssociations(*this));
@@ -69,6 +69,7 @@ namespace arbor_content
 
     const pandora::ClusterList *pClusterList = NULL;
     PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, PandoraContentApi::GetCurrentList(*this, pClusterList));
+	std::cout << "-------> the cluster size of list: " << pClusterList->size() << std::endl;
 
     if(pTrackList->empty() || pClusterList->empty())
       return pandora::STATUS_CODE_SUCCESS;
@@ -116,7 +117,7 @@ namespace arbor_content
   pandora::StatusCode TrackClusterAssociationAlgorithm::BuildPossibleAssociations(const pandora::ClusterList &clusterList, const pandora::TrackList &trackList,
       AssociationMap &associationMap)
   {
-    AssociationConstraintsMap contraintsMap;
+    //AssociationConstraintsMap contraintsMap;
     MultiAssociationMap multiAssociationMap;
 
     for(pandora::TrackList::const_iterator trackIter = trackList.begin() , trackEndIter = trackList.end() ;
@@ -205,7 +206,21 @@ namespace arbor_content
       }
 	  else
 	  {
-		//std::cout << "-------> track energy: " << pTrack->GetEnergyAtDca() << ", no cluster" << std::endl;
+		std::cout << "-------> track energy: " << pTrack->GetEnergyAtDca() << ", no cluster" << std::endl;
+
+		// if the track energy is greater than a prescribed value but has no associated cluster, then
+		// try to check nearby photon candidates ???
+		if(!m_usePhotonClusters) continue;
+    
+		const pandora::ClusterList *pPhotonList = NULL;
+		std::string photonListName("PhotonClusters");
+    
+        if(pandora::STATUS_CODE_SUCCESS != PandoraContentApi::GetList(*this, photonListName, pPhotonList))
+        {
+			std::cout << "TrackClusterAssociationAlgorithm: cluster list PhotonClusters is not available" << std::endl;
+		}
+
+		//if(pPhotonList!=NULL) std::cout << "=============> photon cluster number: " << pPhotonList->size() << std::endl;
 	  }
     }
 
@@ -426,6 +441,10 @@ namespace arbor_content
     m_useEnergyCompatibility = false;
     PANDORA_RETURN_RESULT_IF_AND_IF(pandora::STATUS_CODE_SUCCESS, pandora::STATUS_CODE_NOT_FOUND, !=, pandora::XmlHelper::ReadValue(xmlHandle,
         "UseEnergyCompatibility", m_useEnergyCompatibility));
+
+	m_usePhotonClusters = false;
+    PANDORA_RETURN_RESULT_IF_AND_IF(pandora::STATUS_CODE_SUCCESS, pandora::STATUS_CODE_NOT_FOUND, !=, pandora::XmlHelper::ReadValue(xmlHandle,
+        "UsePhotonClusters", m_usePhotonClusters));
 
     return pandora::STATUS_CODE_SUCCESS;
   }

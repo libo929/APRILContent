@@ -14,7 +14,7 @@ pandora::StatusCode arbor_content::TrackClusterPrintHelper::PrintCluster(const p
     {
       const pandora::Cluster *const pCluster = *iter;
 
-	  std::cout << "----> EnergyExcess: cluster energy: " << pCluster->GetElectromagneticEnergy() << std::endl;
+	  std::cout << "----> Get cluster energy: " << pCluster->GetElectromagneticEnergy() << std::endl;
       const pandora::TrackList &trackList(pCluster->GetAssociatedTrackList());
 	  if(trackList.empty() || trackList.size()>1) 
 	  {
