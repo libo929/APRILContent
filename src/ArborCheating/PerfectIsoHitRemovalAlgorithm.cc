@@ -86,8 +86,14 @@ namespace arbor_content
   void PerfectIsoHitRemovalAlgorithm::SimpleMCParticleCaloHitListCollection(const CaloHit *const pCaloHit, 
 		  MCParticleToCaloHitListMap &mcParticleToCaloHitListMap) const
   {
-    const MCParticle *const pMCParticle(MCParticleHelper::GetMainMCParticle(pCaloHit));
-    this->AddToCaloHitListMap(pCaloHit, pMCParticle, mcParticleToCaloHitListMap);
+	try
+	{
+       const MCParticle *const pMCParticle(MCParticleHelper::GetMainMCParticle(pCaloHit));
+       this->AddToCaloHitListMap(pCaloHit, pMCParticle, mcParticleToCaloHitListMap);
+	}
+    catch (StatusCodeException &)
+    {
+    }
   }
 
   //------------------------------------------------------------------------------------------------------------------------------------------
@@ -95,8 +101,14 @@ namespace arbor_content
   void PerfectIsoHitRemovalAlgorithm::SimpleMCParticleClusterCollection(const Cluster *const pCluster, 
 		  MCParticleToClusterMap &mcParticleToClusterMap) const
   {
-    const MCParticle *const pMCParticle(MCParticleHelper::GetMainMCParticle(pCluster));
-    this->AddToClusterMap(pCluster, pMCParticle, mcParticleToClusterMap);
+	try
+	{
+       const MCParticle *const pMCParticle(MCParticleHelper::GetMainMCParticle(pCluster));
+       this->AddToClusterMap(pCluster, pMCParticle, mcParticleToClusterMap);
+	}
+    catch (StatusCodeException &)
+    {
+    }
   }
 
   //------------------------------------------------------------------------------------------------------------------------------------------
