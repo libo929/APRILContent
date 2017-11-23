@@ -36,13 +36,13 @@ public:
     PerfectIsoHitRemovalAlgorithm();
 
 protected:
-    //virtual bool SelectMCParticlesForClustering(const pandora::MCParticle *const pMCParticle) const;
 
 private:
     pandora::StatusCode Run();
     pandora::StatusCode ReadSettings(const pandora::TiXmlHandle xmlHandle);
 
-    typedef std::map<const pandora::MCParticle*, pandora::ClusterList*> MCParticleToClusterListMap;
+    typedef std::map<const pandora::MCParticle*, pandora::CaloHitList*> MCParticleToCaloHitListMap;
+    typedef std::map<const pandora::MCParticle*, const pandora::Cluster*> MCParticleToClusterMap;
 
     /**
      *  @brief  Simple mc particle collection, using main mc particle associated with each calo hit
@@ -50,7 +50,10 @@ private:
      *  @param  pCaloHit address of the calo hit
      *  @param  mcParticleToHitListMap the mc particle to hit list map
      */
-    void SimpleMCParticleCollection(const pandora::Cluster* const pCaloHit, MCParticleToClusterListMap &mcParticleToClusterListMap) const;
+    void SimpleMCParticleCaloHitListCollection(const pandora::CaloHit* const pCaloHit, 
+			                                   MCParticleToCaloHitListMap &mcParticleToCaloHitListMap) const;
+
+    void SimpleMCParticleClusterCollection(const pandora::Cluster* const pCluster, MCParticleToClusterMap &mcParticleToClusterMap) const;
 
     /**
      *  @brief  Full mc particle collection, using map of mc particles to hit weights; fragment calo hits where necessary
@@ -67,14 +70,21 @@ private:
      *  @param  pMCParticle address of the mc particle
      *  @param  mcParticleToHitListMap the mc particle to hit list map
      */
-    void AddToClusterListMap(const pandora::Cluster *const pClusterToAdd, const pandora::MCParticle *const pMCParticle, MCParticleToClusterListMap &mcParticleToClusterListMap) const;
+
+    void AddToCaloHitListMap(const pandora::CaloHit* const pCaloHitToAdd, 
+		 const pandora::MCParticle *const pMCParticle, MCParticleToCaloHitListMap &mcParticleToCaloHitListMap) const;
+
+    void AddToClusterMap(const pandora::Cluster* const pClusterToAdd, 
+		 const pandora::MCParticle *const pMCParticle, MCParticleToClusterMap &mcParticleToClusterMap) const;
 
     /**
      *  @brief  Create clusters based on information in the mc particle to hit list map
      * 
      *  @param  mcParticleToHitListMap the mc particle to hit list map
      */
-	pandora::StatusCode MergeClusters(const MCParticleToClusterListMap &mcParticleToClusterListMap) const;
+
+	pandora::StatusCode MergeCaloHits(const MCParticleToCaloHitListMap &mcParticleToCaloHitListMap,
+			                          const MCParticleToClusterMap &mcParticleToClusterMap) const;
 
     //pandora::IntVector  m_particleIdList;               ///< list of particle ids of MCPFOs to be selected
     //bool                m_shouldUseOnlyECalHits;        ///< Whether to only use ecal hits in the clustering algorithm

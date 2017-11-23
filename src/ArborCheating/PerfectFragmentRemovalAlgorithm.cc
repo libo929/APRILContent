@@ -38,6 +38,7 @@ namespace arbor_content
       {
         const Cluster *const pCluster = *clusterIter;
 
+		// assume we are at the stage that there are neutral and charged clusters, and fragments
         if (!PandoraContentApi::IsAvailable(*this, pCluster))
           continue;
 
@@ -86,15 +87,53 @@ namespace arbor_content
 
   StatusCode PerfectFragmentRemovalAlgorithm::MergeClusters(const MCParticleToClusterListMap &mcParticleToClusterListMap) const
   {
+	// make a map for (MCP, track)
+	//std::cout << "try to make a map for MCP and track " << std::endl;
+    const TrackList *pTrackList = NULL;
+    PANDORA_RETURN_RESULT_IF(STATUS_CODE_SUCCESS, !=, PandoraContentApi::GetCurrentList(*this, pTrackList));
+
+    TrackList localTrackList(pTrackList->begin(), pTrackList->end());
+    MCParticleToTrackMap mcParticleToTrackMap;
+
+    for (TrackList::const_iterator trackIter = localTrackList.begin(), trackIterEnd = localTrackList.end(); 
+			trackIter != trackIterEnd; ++trackIter)
+    {
+        const Track *const pTrack = *trackIter;
+		//std::cout << "track: " << pTrack << std::endl;
+       
+		try
+        {
+           const MCParticle *const pMCParticle(MCParticleHelper::GetMainMCParticle(pTrack));
+	    
+		   //std::cout << "track: " << pTrack << ", pMCParticle: " << pMCParticle << std::endl;
+    
+		   MCParticleToTrackMap::const_iterator iter = mcParticleToTrackMap.find(pMCParticle);
+
+		   if(iter == mcParticleToTrackMap.end())
+		   {
+		   	mcParticleToTrackMap.insert(MCParticleToTrackMap::value_type(pMCParticle, pTrack));
+		   }
+		}
+        catch (StatusCodeException &)
+        {
+			continue;
+        }
+	}
+
+	//std::cout << "made a map for MCP and track " << std::endl;
+
+	/////////
+
     for (MCParticleToClusterListMap::const_iterator mapIter = mcParticleToClusterListMap.begin(), 
 	    mapIterEnd = mcParticleToClusterListMap.end(); mapIter != mapIterEnd; ++mapIter)
     {
-      //const MCParticle *const pMCParticle = mapIter->first;
       ClusterList *const pClusterList = mapIter->second;
+	  if(pClusterList->size()==0) continue;
+
+	  int nChargedCluster = 0;
 
       if (pClusterList->size()>1)
       {
-		int nChargedCluster = 0;
         const Cluster *mainCluster = NULL;
 
 		for(ClusterList::const_iterator clusterIter = pClusterList->begin(); clusterIter != pClusterList->end(); ++clusterIter)
@@ -102,21 +141,58 @@ namespace arbor_content
 			const Cluster* cluster = *clusterIter;
 
 			const TrackList& associatedTracks = cluster->GetAssociatedTrackList();
-			if(!associatedTracks.empty()) 
+			if(!associatedTracks.empty())
 			{
 				++nChargedCluster;
 				mainCluster = cluster;
 			}
 		}
 
-		// only deal with the case of one charged cluster (main cluster) while other are neutral
-		if(nChargedCluster!=1) continue;
-
-		for(ClusterList::const_iterator clusterIter = pClusterList->begin(); clusterIter != pClusterList->end(); ++clusterIter)
+		// the case of nChargedCluster == 1 or nChargedCluster >1 ???
+		if(nChargedCluster>0)
 		{
-			const Cluster* fragment = *clusterIter;
-			if(fragment != mainCluster) PandoraContentApi::MergeAndDeleteClusters(*this, mainCluster, fragment);
+		   for(ClusterList::const_iterator clusterIter = pClusterList->begin(); clusterIter != pClusterList->end(); ++clusterIter)
+		   {
+		   	 const Cluster* fragment = *clusterIter;
+			 const TrackList& associatedTracks = fragment->GetAssociatedTrackList();
+			 if(!associatedTracks.empty()) continue;
+
+		   	 if(fragment != mainCluster) PandoraContentApi::MergeAndDeleteClusters(*this, mainCluster, fragment);
+		   }
 		}
+	  }
+
+	  if(pClusterList->size()==1 || nChargedCluster==0)
+	  {
+          const MCParticle *const pMCParticle = mapIter->first;
+		  MCParticleToTrackMap::iterator iter = mcParticleToTrackMap.find(pMCParticle);
+
+		  if(iter != mcParticleToTrackMap.end())
+		  {
+			  const Track* track = iter->second;
+
+		      for(ClusterList::const_iterator clusterIter = pClusterList->begin(); clusterIter != pClusterList->end(); ++clusterIter)
+		      {
+		          const Cluster* fragment = *clusterIter;
+				  const TrackList& trackList = fragment->GetAssociatedTrackList();
+
+				  if(trackList.size()>0) continue;
+
+				  // FIXME
+			      if(track->HasAssociatedCluster()) 
+			      {
+			          //std::cout << " !!!!!!!! track has associated to cluster..." << std::endl;
+			          const Cluster* cluster = track->GetAssociatedCluster();
+			          PandoraContentApi::RemoveTrackClusterAssociation(*this, track, cluster);
+			          PandoraContentApi::MergeAndDeleteClusters(*this, cluster, fragment);
+					  PandoraContentApi::AddTrackClusterAssociation(*this, track, cluster);
+			      }
+				  else
+				  {
+					  PandoraContentApi::AddTrackClusterAssociation(*this, track, fragment);
+				  }
+		      }
+		  }
 	  }
 
       delete pClusterList;
@@ -136,7 +212,7 @@ namespace arbor_content
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  StatusCode PerfectFragmentRemovalAlgorithm::ReadSettings(const TiXmlHandle xmlHandle)
+  StatusCode PerfectFragmentRemovalAlgorithm::ReadSettings(const TiXmlHandle )
   {
 #if 0
     PANDORA_RETURN_RESULT_IF_AND_IF(STATUS_CODE_SUCCESS, STATUS_CODE_NOT_FOUND, !=, XmlHelper::ReadVectorOfValues(xmlHandle,

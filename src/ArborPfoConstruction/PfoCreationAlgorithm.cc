@@ -73,6 +73,7 @@ pandora::StatusCode PfoCreationAlgorithm::Run()
 
 pandora::StatusCode PfoCreationAlgorithm::CreateTrackBasedPfos() const
 {
+	std::cout << "In  PfoCreationAlgorithm::CreateTrackBasedPfos() " << std::endl;
     // Current track list should contain those tracks selected as "good" by the track preparation algorithm
     const pandora::TrackList *pTrackList = NULL;
     PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, PandoraContentApi::GetCurrentList<pandora::TrackList>(*this, pTrackList));
@@ -82,18 +83,38 @@ pandora::StatusCode PfoCreationAlgorithm::CreateTrackBasedPfos() const
         const pandora::Track *const pTrack = *iter;
         PandoraContentApi::ParticleFlowObject::Parameters pfoParameters;
 
+
+
         // Walk along list of associated daughter/sibling tracks and their cluster associations
         PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, this->PopulateTrackBasedPfo(pTrack, pfoParameters));
 
         // Specify the pfo parameters
         PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, this->SetTrackBasedPfoParameters(pTrack, pfoParameters));
 
+		//std::cout << "pfoParameters.energy: " << pfoParameters.m_energy.Get() << std::endl;
+
+#if 0
+		const pandora::ClusterList& clusterList = pfoParameters.m_clusterList;
+
+		for(pandora::ClusterList::const_iterator clusterIter = clusterList.begin(), clusterIterEnd = clusterList.end(); 
+		    clusterIter != clusterIterEnd; ++clusterIter)
+		{
+			bool clusterAvailability = (*clusterIter)->IsAvailable();
+
+			if(!clusterAvailability) std::cout << "     *********cluster not Available, with energy : " 
+				<< (*clusterIter)->GetHadronicEnergy() << std::endl;
+		}
+#endif
+
+		//std::cout << "!!!!!! Track availability: " << pfoParameters.m_trackList << std::endl;
+		//std::cout << "!!!!!! Cluster availability: " << pfoParameters.m_clusterList << std::endl;
+
         // Create the pfo
         const pandora::ParticleFlowObject *pPfo(NULL);
         PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, PandoraContentApi::ParticleFlowObject::Create(*this, pfoParameters, pPfo));
 #if 0
-		std::cout << "track based pfo, energy: " << pPfo->GetEnergy() << ", pfoParameters.energy: " 
-			      << pfoParameters.m_energy.Get() << std::endl;
+		//std::cout << "track based pfo, energy: " << pPfo->GetEnergy() << ", pfoParameters.energy: " 
+		//	      << pfoParameters.m_energy.Get() << std::endl;
 
 		const pandora::MCParticleWeightMap& mcpMap = pTrack->GetMCParticleWeightMap();
 
@@ -164,13 +185,19 @@ pandora::StatusCode PfoCreationAlgorithm::SetTrackBasedPfoParameters(const pando
     const bool hasParent(!pTrack->GetParentTrackList().empty());
 
     if (hasParent)
+	{
+		//std::cout << "!!!!!!! hasParent pandora::STATUS_CODE_NOT_ALLOWED " << std::endl;
         return pandora::STATUS_CODE_NOT_ALLOWED;
+	}
 
     const bool hasSibling(!pTrack->GetSiblingTrackList().empty());
     const bool hasDaughter(!pTrack->GetDaughterTrackList().empty());
 
     if (hasSibling && hasDaughter)
+	{
+		//std::cout << "!!!!!!! hasSibling && hasDaughter pandora::STATUS_CODE_NOT_ALLOWED " << std::endl;
         return pandora::STATUS_CODE_NOT_ALLOWED;
+	}
 
     if (hasSibling) {
 		//std::cout << "hasSibling..." << std::endl;

@@ -25,118 +25,153 @@ namespace arbor_content
 
   StatusCode PerfectIsoHitRemovalAlgorithm::Run()
   {
-    const ClusterList *pClusterList = NULL;
-    PANDORA_RETURN_RESULT_IF(STATUS_CODE_SUCCESS, !=, PandoraContentApi::GetCurrentList(*this, pClusterList));
+    const CaloHitList *pCaloHitList = NULL;
+    PANDORA_RETURN_RESULT_IF(STATUS_CODE_SUCCESS, !=, PandoraContentApi::GetCurrentList(*this, pCaloHitList));
 
-    ClusterList localClusterList(pClusterList->begin(), pClusterList->end());
-    MCParticleToClusterListMap mcParticleToClusterListMap;
+    CaloHitList localCaloHitList(pCaloHitList->begin(), pCaloHitList->end());
+    MCParticleToCaloHitListMap mcParticleToCaloHitListMap;
+	int nMissingHits = 0;
+	float energyMissingHits = 0.;
 
-    for (ClusterList::const_iterator clusterIter = localClusterList.begin(), clusterIterEnd = localClusterList.end(); 
-			clusterIter != clusterIterEnd; ++clusterIter)
+    for (CaloHitList::const_iterator caloHitIter = localCaloHitList.begin(), caloHitIterEnd = localCaloHitList.end(); 
+			caloHitIter != caloHitIterEnd; ++caloHitIter)
     {
       try
       {
-        const Cluster *const pCluster = *clusterIter;
+        const CaloHit *const pCaloHit = *caloHitIter;
 
-        if (!PandoraContentApi::IsAvailable(*this, pCluster))
+        if (!PandoraContentApi::IsAvailable(*this, pCaloHit))
           continue;
 
-        this->SimpleMCParticleCollection(pCluster, mcParticleToClusterListMap);
+		energyMissingHits += pCaloHit->GetHadronicEnergy();
+		++nMissingHits;
+
+        this->SimpleMCParticleCaloHitListCollection(pCaloHit, mcParticleToCaloHitListMap);
       }
       catch (StatusCodeException &)
       {
       }
     }
 
-	std::cout << "mcParticleToClusterListMap size: " << mcParticleToClusterListMap.size() << std::endl;
-    this->MergeClusters(mcParticleToClusterListMap);
+	// map of MCP and cluster
+    const ClusterList *pClusterList = NULL;
+    PANDORA_RETURN_RESULT_IF(STATUS_CODE_SUCCESS, !=, PandoraContentApi::GetCurrentList(*this, pClusterList));
+
+    ClusterList localClusterList(pClusterList->begin(), pClusterList->end());
+    MCParticleToClusterMap mcParticleToClusterMap;
+
+    for (ClusterList::const_iterator clusterIter = localClusterList.begin(), clusterIterEnd = localClusterList.end(); 
+			clusterIter != clusterIterEnd; ++clusterIter)
+	{
+		const Cluster *const pCluster = *clusterIter;
+		//std::cout << "cluster: " << pCluster << std::endl;
+        this->SimpleMCParticleClusterCollection(pCluster, mcParticleToClusterMap);
+	}
+
+
+    if(mcParticleToCaloHitListMap.empty() == false && mcParticleToClusterMap.empty() == false)
+	{ 
+		this->MergeCaloHits(mcParticleToCaloHitListMap, mcParticleToClusterMap);
+	}
+
+	std::cout << "======== mcParticleToCaloHitListMap size: " << mcParticleToCaloHitListMap.size() << std::endl;
+	std::cout << "======== mcParticleToClusterMap size: " << mcParticleToClusterMap.size() << std::endl;
+	std::cout << "============= missing hits : " << nMissingHits << ", energy: " <<  energyMissingHits << std::endl;
 
     return STATUS_CODE_SUCCESS;
   }
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  void PerfectIsoHitRemovalAlgorithm::SimpleMCParticleCollection(const Cluster *const pCluster, 
-		  MCParticleToClusterListMap &mcParticleToClusterListMap) const
+  void PerfectIsoHitRemovalAlgorithm::SimpleMCParticleCaloHitListCollection(const CaloHit *const pCaloHit, 
+		  MCParticleToCaloHitListMap &mcParticleToCaloHitListMap) const
+  {
+    const MCParticle *const pMCParticle(MCParticleHelper::GetMainMCParticle(pCaloHit));
+    this->AddToCaloHitListMap(pCaloHit, pMCParticle, mcParticleToCaloHitListMap);
+  }
+
+  //------------------------------------------------------------------------------------------------------------------------------------------
+  
+  void PerfectIsoHitRemovalAlgorithm::SimpleMCParticleClusterCollection(const Cluster *const pCluster, 
+		  MCParticleToClusterMap &mcParticleToClusterMap) const
   {
     const MCParticle *const pMCParticle(MCParticleHelper::GetMainMCParticle(pCluster));
-    this->AddToClusterListMap(pCluster, pMCParticle, mcParticleToClusterListMap);
+    this->AddToClusterMap(pCluster, pMCParticle, mcParticleToClusterMap);
   }
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  void PerfectIsoHitRemovalAlgorithm::AddToClusterListMap(const Cluster *const pClusterToAdd, const MCParticle *const pMCParticle,
-      MCParticleToClusterListMap &mcParticleToClusterListMap) const
+  void PerfectIsoHitRemovalAlgorithm::AddToCaloHitListMap(const CaloHit *const pCaloHitToAdd, const MCParticle *const pMCParticle,
+      MCParticleToCaloHitListMap &mcParticleToCaloHitListMap) const
   {
-    MCParticleToClusterListMap::iterator iter(mcParticleToClusterListMap.find(pMCParticle));
+    MCParticleToCaloHitListMap::iterator iter(mcParticleToCaloHitListMap.find(pMCParticle));
 
-    if (mcParticleToClusterListMap.end() == iter)
+    if (mcParticleToCaloHitListMap.end() == iter)
     {
-      ClusterList *const pClusterList = new ClusterList();
-      pClusterList->insert(pClusterToAdd);
-      (void) mcParticleToClusterListMap.insert(MCParticleToClusterListMap::value_type(pMCParticle, pClusterList));
+      CaloHitList *const pCaloHitList = new CaloHitList();
+      pCaloHitList->insert(pCaloHitToAdd);
+      (void) mcParticleToCaloHitListMap.insert(MCParticleToCaloHitListMap::value_type(pMCParticle, pCaloHitList));
     }
     else
     {
-      iter->second->insert(pClusterToAdd);
+      iter->second->insert(pCaloHitToAdd);
+    }
+  }
+
+  //------------------------------------------------------------------------------------------------------------------------------------------
+  
+  void PerfectIsoHitRemovalAlgorithm::AddToClusterMap(const Cluster *const pClusterToAdd, const MCParticle *const pMCParticle,
+      MCParticleToClusterMap &mcParticleToClusterMap) const
+  {
+	//std::cout << "     - mcp: " << pMCParticle << std::endl;
+    if (mcParticleToClusterMap.find(pMCParticle) == mcParticleToClusterMap.end() )
+    {
+      mcParticleToClusterMap.insert(MCParticleToClusterMap::value_type(pMCParticle, pClusterToAdd));
+	  //std::cout << "      added cluster: " << pClusterToAdd << ", mcp: " << pMCParticle << std::endl;
     }
   }
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  StatusCode PerfectIsoHitRemovalAlgorithm::MergeClusters(const MCParticleToClusterListMap &mcParticleToClusterListMap) const
+  StatusCode PerfectIsoHitRemovalAlgorithm::MergeCaloHits(const MCParticleToCaloHitListMap &mcParticleToCaloHitListMap,
+		                                                  const MCParticleToClusterMap &mcParticleToClusterMap) const
   {
-    for (MCParticleToClusterListMap::const_iterator mapIter = mcParticleToClusterListMap.begin(), 
-	    mapIterEnd = mcParticleToClusterListMap.end(); mapIter != mapIterEnd; ++mapIter)
+    for (MCParticleToCaloHitListMap::const_iterator mapIter = mcParticleToCaloHitListMap.begin(), 
+	    mapIterEnd = mcParticleToCaloHitListMap.end(); mapIter != mapIterEnd; ++mapIter)
     {
-      //const MCParticle *const pMCParticle = mapIter->first;
-      ClusterList *const pClusterList = mapIter->second;
+      const MCParticle *const pMCParticle = mapIter->first;
+      CaloHitList *const pCaloHitList = mapIter->second;
 
-      if (pClusterList->size()>1)
+      if (pCaloHitList->size()>0)
       {
-		int nChargedCluster = 0;
-        const Cluster *mainCluster = NULL;
+		// get the cluster which will merge hits by MCP
+		MCParticleToClusterMap::const_iterator iter(mcParticleToClusterMap.find(pMCParticle));
+		if(iter == mcParticleToClusterMap.end()) continue;
 
-		for(ClusterList::const_iterator clusterIter = pClusterList->begin(); clusterIter != pClusterList->end(); ++clusterIter)
+		const Cluster* const pCluster = iter->second;
+
+		for(CaloHitList::const_iterator caloHitIter = pCaloHitList->begin(); caloHitIter != pCaloHitList->end(); ++caloHitIter)
 		{
-			const Cluster* cluster = *clusterIter;
+			const CaloHit* const caloHit = *caloHitIter;
 
-			const TrackList& associatedTracks = cluster->GetAssociatedTrackList();
-			if(!associatedTracks.empty()) 
-			{
-				++nChargedCluster;
-				mainCluster = cluster;
-			}
-		}
+			// only for neutral particle ?
 
-		// only deal with the case of one charged cluster (main cluster) while other are neutral
-		if(nChargedCluster!=1) continue;
-
-		for(ClusterList::const_iterator clusterIter = pClusterList->begin(); clusterIter != pClusterList->end(); ++clusterIter)
-		{
-			const Cluster* fragment = *clusterIter;
-			if(fragment != mainCluster) PandoraContentApi::MergeAndDeleteClusters(*this, mainCluster, fragment);
+			//std::cout << "++++++ Add hit to cluster: " << pCluster << ", " << caloHit << std::endl;
+			//std::cout << pCluster->GetHadronicEnergy() << std::endl;
+			PandoraContentApi::AddIsolatedToCluster(*this, pCluster, caloHit);
+			//std::cout << "  adding done..." << std::endl;
 		}
 	  }
 
-      delete pClusterList;
+      delete pCaloHitList;
     }
-
-#if 0
-	std::string cluName("perfectClusters");
-    if (!pClusterList->empty())
-    {
-      PANDORA_RETURN_RESULT_IF(STATUS_CODE_SUCCESS, !=, PandoraContentApi::SaveList<Cluster>(*this, cluName));
-      PANDORA_RETURN_RESULT_IF(STATUS_CODE_SUCCESS, !=, PandoraContentApi::ReplaceCurrentList<Cluster>(*this, cluName));
-    }
-#endif
 
 	return STATUS_CODE_SUCCESS;
   }
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  StatusCode PerfectIsoHitRemovalAlgorithm::ReadSettings(const TiXmlHandle xmlHandle)
+  StatusCode PerfectIsoHitRemovalAlgorithm::ReadSettings(const TiXmlHandle )
   {
 #if 0
     PANDORA_RETURN_RESULT_IF_AND_IF(STATUS_CODE_SUCCESS, STATUS_CODE_NOT_FOUND, !=, XmlHelper::ReadVectorOfValues(xmlHandle,

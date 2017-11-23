@@ -43,6 +43,8 @@ private:
     pandora::StatusCode ReadSettings(const pandora::TiXmlHandle xmlHandle);
 
     typedef std::map<const pandora::MCParticle*, pandora::ClusterList*> MCParticleToClusterListMap;
+    typedef std::map<const pandora::MCParticle*, const pandora::Track*> MCParticleToTrackMap;
+
 
     /**
      *  @brief  Simple mc particle collection, using main mc particle associated with each calo hit

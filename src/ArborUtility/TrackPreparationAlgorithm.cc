@@ -62,10 +62,10 @@ pandora::StatusCode TrackPreparationAlgorithm::Run()
         {
             if ((*trackIter)->IsAvailable()) {
                 candidateTrackList.insert(*trackIter);
-				std::cout << "candi track: " << ++nCandiTrack << ", energy: " << (*trackIter)->GetEnergyAtDca() << std::endl;
+				//std::cout << "candi track: " << ++nCandiTrack << ", energy: " << (*trackIter)->GetEnergyAtDca() << std::endl;
 			}
 			else {
-				std::cout << "not a candi track,  energy: " << (*trackIter)->GetEnergyAtDca() << std::endl;
+				//std::cout << "not a candi track,  energy: " << (*trackIter)->GetEnergyAtDca() << std::endl;
 			}
         }
     }
@@ -174,7 +174,7 @@ pandora::StatusCode TrackPreparationAlgorithm::CreatePfoTrackList(const pandora:
         }
 		else 
 		{
-			std::cout << "ignore this track ... energy: " << pTrack->GetEnergyAtDca() << std::endl;
+			//std::cout << "ignore this track ... energy: " << pTrack->GetEnergyAtDca() << std::endl;
             // FIXME we should be very careful here !!!!!!!!!!!!!
             // energy, reach ecal can form pfo ???????????
             
