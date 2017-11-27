@@ -25,6 +25,8 @@ namespace arbor_content
 
   StatusCode PerfectIsoHitRemovalAlgorithm::Run()
   {
+	m_CaloHitMCGetterFailures = 0;
+
     const CaloHitList *pCaloHitList = NULL;
     PANDORA_RETURN_RESULT_IF(STATUS_CODE_SUCCESS, !=, PandoraContentApi::GetCurrentList(*this, pCaloHitList));
 
@@ -68,15 +70,29 @@ namespace arbor_content
         this->SimpleMCParticleClusterCollection(pCluster, mcParticleToClusterMap);
 	}
 
+	///////////////
+#if 1
+    const ClusterList *pNewClusterList = NULL; std::string newClusterListName;
+    PANDORA_RETURN_RESULT_IF(STATUS_CODE_SUCCESS, !=, PandoraContentApi::CreateTemporaryListAndSetCurrent(*this, pNewClusterList, newClusterListName));
+#endif
 
     if(mcParticleToCaloHitListMap.empty() == false && mcParticleToClusterMap.empty() == false)
 	{ 
 		this->MergeCaloHits(mcParticleToCaloHitListMap, mcParticleToClusterMap);
 	}
 
+#if 1
+	std::string m_outputClusterListName("ClustersFromIsoHits");
+    if (!pNewClusterList->empty())
+    {
+      PANDORA_RETURN_RESULT_IF(STATUS_CODE_SUCCESS, !=, PandoraContentApi::SaveList<Cluster>(*this, m_outputClusterListName));
+    }
+#endif
+
 	std::cout << "======== mcParticleToCaloHitListMap size: " << mcParticleToCaloHitListMap.size() << std::endl;
 	std::cout << "======== mcParticleToClusterMap size: " << mcParticleToClusterMap.size() << std::endl;
 	std::cout << "============= missing hits : " << nMissingHits << ", energy: " <<  energyMissingHits << std::endl;
+	std::cout << "============= CaloHitMCGetterFailures: " << m_CaloHitMCGetterFailures << std::endl;
 
     return STATUS_CODE_SUCCESS;
   }
@@ -84,7 +100,7 @@ namespace arbor_content
   //------------------------------------------------------------------------------------------------------------------------------------------
 
   void PerfectIsoHitRemovalAlgorithm::SimpleMCParticleCaloHitListCollection(const CaloHit *const pCaloHit, 
-		  MCParticleToCaloHitListMap &mcParticleToCaloHitListMap) const
+		  MCParticleToCaloHitListMap &mcParticleToCaloHitListMap)
   {
 	try
 	{
@@ -93,13 +109,14 @@ namespace arbor_content
 	}
     catch (StatusCodeException &)
     {
+		//++m_CaloHitMCGetterFailures;
     }
   }
 
   //------------------------------------------------------------------------------------------------------------------------------------------
   
   void PerfectIsoHitRemovalAlgorithm::SimpleMCParticleClusterCollection(const Cluster *const pCluster, 
-		  MCParticleToClusterMap &mcParticleToClusterMap) const
+		  MCParticleToClusterMap &mcParticleToClusterMap)
   {
 	try
 	{
@@ -108,6 +125,7 @@ namespace arbor_content
 	}
     catch (StatusCodeException &)
     {
+		//++m_CaloHitMCGetterFailures;
     }
   }
 
@@ -117,6 +135,8 @@ namespace arbor_content
       MCParticleToCaloHitListMap &mcParticleToCaloHitListMap) const
   {
     MCParticleToCaloHitListMap::iterator iter(mcParticleToCaloHitListMap.find(pMCParticle));
+
+    if (!PandoraContentApi::IsAvailable(*this, pCaloHitToAdd)) return;
 
     if (mcParticleToCaloHitListMap.end() == iter)
     {
@@ -148,6 +168,9 @@ namespace arbor_content
   StatusCode PerfectIsoHitRemovalAlgorithm::MergeCaloHits(const MCParticleToCaloHitListMap &mcParticleToCaloHitListMap,
 		                                                  const MCParticleToClusterMap &mcParticleToClusterMap) const
   {
+	int nHitMerged = 0;
+	int nPassed = 0;
+
     for (MCParticleToCaloHitListMap::const_iterator mapIter = mcParticleToCaloHitListMap.begin(), 
 	    mapIterEnd = mcParticleToCaloHitListMap.end(); mapIter != mapIterEnd; ++mapIter)
     {
@@ -157,51 +180,65 @@ namespace arbor_content
       if (pCaloHitList->size()>0)
       {
 		// get the cluster which will merge hits by MCP
+
 		MCParticleToClusterMap::const_iterator iter(mcParticleToClusterMap.find(pMCParticle));
-		if(iter == mcParticleToClusterMap.end()) continue;
 
-		const Cluster* const pCluster = iter->second;
-
-		for(CaloHitList::const_iterator caloHitIter = pCaloHitList->begin(); caloHitIter != pCaloHitList->end(); ++caloHitIter)
+		if(iter == mcParticleToClusterMap.end()) 
 		{
-			const CaloHit* const caloHit = *caloHitIter;
+			// create new cluster for isolated hit
+			CreateCluster(pCaloHitList);
+		}
+		else
+		{
+		    const Cluster* const pCluster = iter->second;
 
-			// only for neutral particle ?
+		    for(CaloHitList::const_iterator caloHitIter = pCaloHitList->begin(); caloHitIter != pCaloHitList->end(); ++caloHitIter)
+		    {
+		    	const CaloHit* const caloHit = *caloHitIter;
 
-			//std::cout << "++++++ Add hit to cluster: " << pCluster << ", " << caloHit << std::endl;
-			//std::cout << pCluster->GetHadronicEnergy() << std::endl;
-			PandoraContentApi::AddIsolatedToCluster(*this, pCluster, caloHit);
-			//std::cout << "  adding done..." << std::endl;
+		    	// only for neutral particle ?
+
+		    	//std::cout << "++++++ Add hit to cluster: " << pCluster << ", " << caloHit << std::endl;
+		    	//std::cout << pCluster->GetHadronicEnergy() << std::endl;
+		    	//PandoraContentApi::AddIsolatedToCluster(*this, pCluster, caloHit);
+		    	PandoraContentApi::AddToCluster(*this, pCluster, caloHit);
+		    	//std::cout << "  adding done..." << std::endl;
+		    	++nHitMerged;
+		    }
 		}
 	  }
 
       delete pCaloHitList;
     }
 
+	//std::cout << "   ==== hit merged: " << nHitMerged << ", hit passed: " << nPassed << std::endl;
+
 	return STATUS_CODE_SUCCESS;
   }
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
+  void PerfectIsoHitRemovalAlgorithm::CreateCluster(const CaloHitList *const caloHitList) const
+  {
+	const Cluster *pCluster = NULL;
+	const CaloHitList* pCaloHitList = caloHitList;
+
+	if(pCaloHitList->size()==0) return;
+
+    PandoraContentApi::Cluster::Parameters parameters;
+    parameters.m_caloHitList = *pCaloHitList;
+
+	//std::cout << " need to CreateCluster" << std::endl;
+
+
+    PANDORA_THROW_RESULT_IF(STATUS_CODE_SUCCESS, !=, PandoraContentApi::Cluster::Create(*this, parameters, pCluster));
+    //PandoraContentApi::Cluster::Create(*this, parameters, pCluster);
+  }
+
+  //------------------------------------------------------------------------------------------------------------------------------------------
+  
   StatusCode PerfectIsoHitRemovalAlgorithm::ReadSettings(const TiXmlHandle )
   {
-#if 0
-    PANDORA_RETURN_RESULT_IF_AND_IF(STATUS_CODE_SUCCESS, STATUS_CODE_NOT_FOUND, !=, XmlHelper::ReadVectorOfValues(xmlHandle,
-        "ParticleIdList", m_particleIdList));
-
-    PANDORA_RETURN_RESULT_IF_AND_IF(STATUS_CODE_SUCCESS, STATUS_CODE_NOT_FOUND, !=, XmlHelper::ReadValue(xmlHandle,
-        "ShouldUseOnlyECalHits", m_shouldUseOnlyECalHits));
-
-    PANDORA_RETURN_RESULT_IF_AND_IF(STATUS_CODE_SUCCESS, STATUS_CODE_NOT_FOUND, !=, XmlHelper::ReadValue(xmlHandle,
-        "ShouldUseIsolatedHits", m_shouldUseIsolatedHits));
-
-    PANDORA_RETURN_RESULT_IF_AND_IF(STATUS_CODE_SUCCESS, STATUS_CODE_NOT_FOUND, !=, XmlHelper::ReadValue(xmlHandle,
-        "SimpleMCParticleCollection", m_simpleMCParticleCollection));
-
-    PANDORA_RETURN_RESULT_IF_AND_IF(STATUS_CODE_SUCCESS, STATUS_CODE_NOT_FOUND, !=, XmlHelper::ReadValue(xmlHandle,
-        "MinWeightFraction", m_minWeightFraction));
-#endif
-
     return STATUS_CODE_SUCCESS;
   }
 

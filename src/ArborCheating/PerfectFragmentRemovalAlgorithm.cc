@@ -198,15 +198,6 @@ namespace arbor_content
       delete pClusterList;
     }
 
-#if 0
-	std::string cluName("perfectClusters");
-    if (!pClusterList->empty())
-    {
-      PANDORA_RETURN_RESULT_IF(STATUS_CODE_SUCCESS, !=, PandoraContentApi::SaveList<Cluster>(*this, cluName));
-      PANDORA_RETURN_RESULT_IF(STATUS_CODE_SUCCESS, !=, PandoraContentApi::ReplaceCurrentList<Cluster>(*this, cluName));
-    }
-#endif
-
 	return STATUS_CODE_SUCCESS;
   }
 
@@ -214,23 +205,6 @@ namespace arbor_content
 
   StatusCode PerfectFragmentRemovalAlgorithm::ReadSettings(const TiXmlHandle )
   {
-#if 0
-    PANDORA_RETURN_RESULT_IF_AND_IF(STATUS_CODE_SUCCESS, STATUS_CODE_NOT_FOUND, !=, XmlHelper::ReadVectorOfValues(xmlHandle,
-        "ParticleIdList", m_particleIdList));
-
-    PANDORA_RETURN_RESULT_IF_AND_IF(STATUS_CODE_SUCCESS, STATUS_CODE_NOT_FOUND, !=, XmlHelper::ReadValue(xmlHandle,
-        "ShouldUseOnlyECalHits", m_shouldUseOnlyECalHits));
-
-    PANDORA_RETURN_RESULT_IF_AND_IF(STATUS_CODE_SUCCESS, STATUS_CODE_NOT_FOUND, !=, XmlHelper::ReadValue(xmlHandle,
-        "ShouldUseIsolatedHits", m_shouldUseIsolatedHits));
-
-    PANDORA_RETURN_RESULT_IF_AND_IF(STATUS_CODE_SUCCESS, STATUS_CODE_NOT_FOUND, !=, XmlHelper::ReadValue(xmlHandle,
-        "SimpleMCParticleCollection", m_simpleMCParticleCollection));
-
-    PANDORA_RETURN_RESULT_IF_AND_IF(STATUS_CODE_SUCCESS, STATUS_CODE_NOT_FOUND, !=, XmlHelper::ReadValue(xmlHandle,
-        "MinWeightFraction", m_minWeightFraction));
-#endif
-
     return STATUS_CODE_SUCCESS;
   }
 

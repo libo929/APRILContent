@@ -35,6 +35,7 @@ public:
      */
     PerfectIsoHitRemovalAlgorithm();
 
+
 protected:
 
 private:
@@ -51,9 +52,9 @@ private:
      *  @param  mcParticleToHitListMap the mc particle to hit list map
      */
     void SimpleMCParticleCaloHitListCollection(const pandora::CaloHit* const pCaloHit, 
-			                                   MCParticleToCaloHitListMap &mcParticleToCaloHitListMap) const;
+			                                   MCParticleToCaloHitListMap &mcParticleToCaloHitListMap);
 
-    void SimpleMCParticleClusterCollection(const pandora::Cluster* const pCluster, MCParticleToClusterMap &mcParticleToClusterMap) const;
+    void SimpleMCParticleClusterCollection(const pandora::Cluster* const pCluster, MCParticleToClusterMap &mcParticleToClusterMap);
 
     /**
      *  @brief  Full mc particle collection, using map of mc particles to hit weights; fragment calo hits where necessary
@@ -86,11 +87,14 @@ private:
 	pandora::StatusCode MergeCaloHits(const MCParticleToCaloHitListMap &mcParticleToCaloHitListMap,
 			                          const MCParticleToClusterMap &mcParticleToClusterMap) const;
 
+	void CreateCluster(const pandora::CaloHitList *const caloHitList) const;
+
     //pandora::IntVector  m_particleIdList;               ///< list of particle ids of MCPFOs to be selected
     //bool                m_shouldUseOnlyECalHits;        ///< Whether to only use ecal hits in the clustering algorithm
     //bool                m_shouldUseIsolatedHits;        ///< Whether to use isolated hits in the clustering algorithm
     //bool                m_simpleMCParticleCollection;   ///< Whether to use simple mc particle collection mechanism, or full mechanism
     //float               m_minWeightFraction;            ///< The minimum mc particle calo hit weight for clustering consideration
+	int                   m_CaloHitMCGetterFailures;
 };
 
 //------------------------------------------------------------------------------------------------------------------------------------------

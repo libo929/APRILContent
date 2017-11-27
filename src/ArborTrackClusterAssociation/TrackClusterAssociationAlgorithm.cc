@@ -48,7 +48,7 @@ namespace arbor_content
     if(trackList.empty() || clusterList.empty())
       return pandora::STATUS_CODE_SUCCESS;
 
-	std::cout << "----> clusterList size: " << clusterList.size() << std::endl;
+	//std::cout << "----> clusterList size: " << clusterList.size() << std::endl;
 	//std::cout << "trackList size: " << trackList.size() << std::endl;
     // reset the track-cluster associations
     PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, PandoraContentApi::RemoveCurrentTrackClusterAssociations(*this));
@@ -69,7 +69,7 @@ namespace arbor_content
 
     const pandora::ClusterList *pClusterList = NULL;
     PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, PandoraContentApi::GetCurrentList(*this, pClusterList));
-	std::cout << "-------> the cluster size of list: " << pClusterList->size() << std::endl;
+	//std::cout << "-------> the cluster size of list: " << pClusterList->size() << std::endl;
 
     if(pTrackList->empty() || pClusterList->empty())
       return pandora::STATUS_CODE_SUCCESS;
@@ -206,7 +206,7 @@ namespace arbor_content
       }
 	  else
 	  {
-		std::cout << "-------> track energy: " << pTrack->GetEnergyAtDca() << ", no cluster" << std::endl;
+		//std::cout << "-------> track energy: " << pTrack->GetEnergyAtDca() << ", no cluster" << std::endl;
 
 		// if the track energy is greater than a prescribed value but has no associated cluster, then
 		// try to check nearby photon candidates ???
