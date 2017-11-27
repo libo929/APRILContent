@@ -48,6 +48,7 @@
 #include "ArborClustering/ArborClusteringAlgorithm.h"
 #include "ArborClustering/ClusteringParentAlgorithm.h"
 #include "ArborClustering/SimpleRegionClusteringAlgorithm.h"
+#include "ArborClustering/IsoHitRemovalAlgorithm.h"
 
 #include "ArborHelpers/CaloHitHelper.h"
 #include "ArborHelpers/ClusterHelper.h"
@@ -120,6 +121,7 @@ public:
     d("PerfectClustering",                   arbor_content::PerfectClusteringAlgorithm::Factory) \
     d("PerfectFragmentRemoval",              arbor_content::PerfectFragmentRemovalAlgorithm::Factory) \
     d("PerfectIsoHitRemoval",                arbor_content::PerfectIsoHitRemovalAlgorithm::Factory) \
+    d("IsoHitRemoval",                       arbor_content::IsoHitRemovalAlgorithm::Factory) \
     d("PerfectNeutralHitRecovery",           arbor_content::PerfectNeutralHitRecoveryAlgorithm::Factory) \
     d("CheatingTrackToClusterMatching",      arbor_content::CheatingTrackToClusterMatching::Factory) \
     d("ArborClustering",                     arbor_content::ArborClusteringAlgorithm::Factory) \
