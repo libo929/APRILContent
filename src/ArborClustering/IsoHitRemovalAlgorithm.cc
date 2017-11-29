@@ -10,7 +10,7 @@
 
 #include "Pandora/AlgorithmHeaders.h"
 
-#include "ArborCheating/IsoHitRemovalAlgorithm.h"
+#include "ArborClustering/IsoHitRemovalAlgorithm.h"
 
 using namespace pandora;
 
@@ -25,15 +25,60 @@ namespace arbor_content
 
   StatusCode IsoHitRemovalAlgorithm::Run()
   {
-	m_CaloHitMCGetterFailures = 0;
+	//Test();
+	
+	m_hitsKDTree = new HitKDTree;
+	BuildKDTree(*m_hitsKDTree);
+	
+	CaloHitList isoHitList;
+    MCParticleToCaloHitListMap mcParticleToCaloHitListMap;
 
+	GetIsoHits(isoHitList, mcParticleToCaloHitListMap);
+	std::cout << "isolated hit size: " << isoHitList.size() << std::endl;
+
+	/////////
+	ClusterList clusterList;
+    MCParticleToClusterMap mcParticleToClusterMap;
+	GetClusters(clusterList, mcParticleToClusterMap);
+	std::cout << "cluster size: " << clusterList.size() << std::endl;
+
+    const ClusterList *pNewClusterList = NULL; std::string newClusterListName;
+    PANDORA_RETURN_RESULT_IF(STATUS_CODE_SUCCESS, !=, PandoraContentApi::CreateTemporaryListAndSetCurrent(*this, pNewClusterList, newClusterListName));
+
+#if 0
+    if(mcParticleToCaloHitListMap.empty() == false && mcParticleToClusterMap.empty() == false)
+	{ 
+		this->MCMergeCaloHits(mcParticleToCaloHitListMap, mcParticleToClusterMap);
+	}
+#else
+	if(isoHitList.size() && clusterList.size())
+	{
+		MergeCaloHits(isoHitList, clusterList);
+	}
+#endif
+
+	std::string m_outputClusterListName("ClustersFromIsoHits");
+    if (!pNewClusterList->empty())
+    {
+      PANDORA_RETURN_RESULT_IF(STATUS_CODE_SUCCESS, !=, PandoraContentApi::SaveList<Cluster>(*this, m_outputClusterListName));
+    }
+
+	std::cout << "======== mcParticleToCaloHitListMap size: " << mcParticleToCaloHitListMap.size() << std::endl;
+	std::cout << "======== mcParticleToClusterMap size: " << mcParticleToClusterMap.size() << std::endl;
+
+	delete m_hitsKDTree;
+
+    return STATUS_CODE_SUCCESS;
+  }
+
+  //------------------------------------------------------------------------------------------------------------------------------------------
+  
+  StatusCode IsoHitRemovalAlgorithm::GetIsoHits(CaloHitList& isoHitList, MCParticleToCaloHitListMap& mcParticleToCaloHitListMap)
+  {
     const CaloHitList *pCaloHitList = NULL;
     PANDORA_RETURN_RESULT_IF(STATUS_CODE_SUCCESS, !=, PandoraContentApi::GetCurrentList(*this, pCaloHitList));
 
     CaloHitList localCaloHitList(pCaloHitList->begin(), pCaloHitList->end());
-    MCParticleToCaloHitListMap mcParticleToCaloHitListMap;
-	int nMissingHits = 0;
-	float energyMissingHits = 0.;
 
     for (CaloHitList::const_iterator caloHitIter = localCaloHitList.begin(), caloHitIterEnd = localCaloHitList.end(); 
 			caloHitIter != caloHitIterEnd; ++caloHitIter)
@@ -45,8 +90,8 @@ namespace arbor_content
         if (!PandoraContentApi::IsAvailable(*this, pCaloHit))
           continue;
 
-		energyMissingHits += pCaloHit->GetHadronicEnergy();
-		++nMissingHits;
+		//energyMissingHits += pCaloHit->GetHadronicEnergy();
+		isoHitList.insert(pCaloHit);
 
         this->SimpleMCParticleCaloHitListCollection(pCaloHit, mcParticleToCaloHitListMap);
       }
@@ -55,46 +100,153 @@ namespace arbor_content
       }
     }
 
-	// map of MCP and cluster
+    return STATUS_CODE_SUCCESS;
+  }
+
+  //------------------------------------------------------------------------------------------------------------------------------------------
+
+  StatusCode IsoHitRemovalAlgorithm::GetClusters(ClusterList& clusterList, MCParticleToClusterMap& mcParticleToClusterMap)
+  {
     const ClusterList *pClusterList = NULL;
     PANDORA_RETURN_RESULT_IF(STATUS_CODE_SUCCESS, !=, PandoraContentApi::GetCurrentList(*this, pClusterList));
 
     ClusterList localClusterList(pClusterList->begin(), pClusterList->end());
-    MCParticleToClusterMap mcParticleToClusterMap;
 
     for (ClusterList::const_iterator clusterIter = localClusterList.begin(), clusterIterEnd = localClusterList.end(); 
 			clusterIter != clusterIterEnd; ++clusterIter)
 	{
 		const Cluster *const pCluster = *clusterIter;
-		//std::cout << "cluster: " << pCluster << std::endl;
+
+		clusterList.insert(pCluster);
         this->SimpleMCParticleClusterCollection(pCluster, mcParticleToClusterMap);
 	}
 
-	///////////////
-#if 1
-    const ClusterList *pNewClusterList = NULL; std::string newClusterListName;
-    PANDORA_RETURN_RESULT_IF(STATUS_CODE_SUCCESS, !=, PandoraContentApi::CreateTemporaryListAndSetCurrent(*this, pNewClusterList, newClusterListName));
-#endif
-
-    if(mcParticleToCaloHitListMap.empty() == false && mcParticleToClusterMap.empty() == false)
-	{ 
-		this->MergeCaloHits(mcParticleToCaloHitListMap, mcParticleToClusterMap);
-	}
-
-#if 1
-	std::string m_outputClusterListName("ClustersFromIsoHits");
-    if (!pNewClusterList->empty())
-    {
-      PANDORA_RETURN_RESULT_IF(STATUS_CODE_SUCCESS, !=, PandoraContentApi::SaveList<Cluster>(*this, m_outputClusterListName));
-    }
-#endif
-
-	std::cout << "======== mcParticleToCaloHitListMap size: " << mcParticleToCaloHitListMap.size() << std::endl;
-	std::cout << "======== mcParticleToClusterMap size: " << mcParticleToClusterMap.size() << std::endl;
-	std::cout << "============= missing hits : " << nMissingHits << ", energy: " <<  energyMissingHits << std::endl;
-	std::cout << "============= CaloHitMCGetterFailures: " << m_CaloHitMCGetterFailures << std::endl;
-
     return STATUS_CODE_SUCCESS;
+  }
+
+  //------------------------------------------------------------------------------------------------------------------------------------------
+
+  StatusCode IsoHitRemovalAlgorithm::BuildKDTree(HitKDTree& hits_kdtree)
+  {
+     const ClusterList *pClusterList = NULL;
+     PANDORA_RETURN_RESULT_IF(STATUS_CODE_SUCCESS, !=, PandoraContentApi::GetCurrentList(*this, pClusterList));
+
+     std::vector<HitKDNode> hit_nodes;
+     CaloHitList hit_list, clusterHits;
+
+     // build the kd-tree of hits from the input clusters and save the map of hits to clusters
+     for (const Cluster *const pCluster : *pClusterList)
+     {   
+         pCluster->GetOrderedCaloHitList().GetCaloHitList(clusterHits);
+
+         for (const CaloHit *const pCaloHit : clusterHits)
+         {   
+             hit_list.insert(pCaloHit);
+         }   
+
+         clusterHits.clear();
+     }   
+
+     KDTreeTesseract hitsBoundingRegion = fill_and_bound_4d_kd_tree(this, hit_list, hit_nodes, true);
+     hits_kdtree.build(hit_nodes,hitsBoundingRegion);
+     hit_nodes.clear();
+
+	 return STATUS_CODE_SUCCESS;
+  }
+
+  //------------------------------------------------------------------------------------------------------------------------------------------
+
+  StatusCode IsoHitRemovalAlgorithm::SearchNearbyCaloHits(const CaloHit* pCaloHit, std::vector<const CaloHit*>& nearbyHits,
+		                                                  float wideX, float wideY, float wideZ, int layers)
+  {
+     std::vector<HitKDNode> found_hits; 
+
+     CartesianVector hitPosition(pCaloHit->GetPositionVector());
+	 //std::cout << "hit center: " << hitPosition << std::endl;
+
+     KDTreeTesseract searchRegionHits = build_4d_kd_search_region(hitPosition, wideX, wideY, wideZ, layers); 
+     m_hitsKDTree->search(searchRegionHits, found_hits);
+
+     for (const auto &hit : found_hits)                                                                       
+     {
+         auto caloHit = hit.data;
+#if 0
+	     CartesianVector pos(caloHit->GetPositionVector());
+	     CartesianVector distance = pos - hitPosition;
+
+	     std::cout << "   -----> hit layer: " << caloHit->GetLayer() << "  pos: " << pos 
+	    	       << ", distance: " << distance.GetMagnitude() << std::endl;
+#endif
+
+		 nearbyHits.push_back(caloHit);
+     }
+
+     found_hits.clear();  
+
+	 return STATUS_CODE_SUCCESS;
+  }
+
+  //------------------------------------------------------------------------------------------------------------------------------------------
+
+  StatusCode IsoHitRemovalAlgorithm::Test()
+  {
+     const ClusterList *pClusterList = NULL;
+     PANDORA_RETURN_RESULT_IF(STATUS_CODE_SUCCESS, !=, PandoraContentApi::GetCurrentList(*this, pClusterList));
+
+     HitKDTree hits_kdtree;
+     std::vector<HitKDNode> hit_nodes;
+     CaloHitList hit_list, clusterHits;
+	 HitsToClustersMap hits_to_clusters;
+
+     // build the kd-tree of hits from the input clusters and save the map of hits to clusters
+     for (const Cluster *const pCluster : *pClusterList)
+     {   
+         pCluster->GetOrderedCaloHitList().GetCaloHitList(clusterHits);
+
+         for (const CaloHit *const pCaloHit : clusterHits)
+         {   
+             hit_list.insert(pCaloHit);
+             hits_to_clusters.emplace(pCaloHit, pCluster);
+         }   
+
+         clusterHits.clear();
+     }   
+
+     KDTreeTesseract hitsBoundingRegion = fill_and_bound_4d_kd_tree(this, hit_list, hit_nodes, true);
+     //hit_list.clear();
+     hits_kdtree.build(hit_nodes,hitsBoundingRegion);
+     hit_nodes.clear();
+
+	 for(CaloHitList::const_iterator iter = hit_list.begin(); iter != hit_list.end(); ++iter)
+	 {
+         //ClusterList nearby_clusters;                                                                                              
+         std::vector<HitKDNode> found_hits; 
+
+		 const CaloHit* pCaloHit = *iter;
+         CartesianVector hitPosition(pCaloHit->GetPositionVector());
+		 std::cout << "hit center: " << hitPosition << std::endl;
+
+         float m_parallelDistanceCut(200.);
+         float iPseudoLayer(2);
+    
+         KDTreeTesseract searchRegionHits = build_4d_kd_search_region(hitPosition, m_parallelDistanceCut, 
+      		   m_parallelDistanceCut, m_parallelDistanceCut, iPseudoLayer);
+         hits_kdtree.search(searchRegionHits, found_hits);
+
+         for (const auto &hit : found_hits)                                                                       
+         {                                                                                                        
+             auto caloHit = hit.data;                                               
+			 CartesianVector pos(caloHit->GetPositionVector());
+			 CartesianVector distance = pos - hitPosition;
+
+			 std::cout << "   -----> hit layer: " << caloHit->GetLayer() << "  pos: " << pos 
+				       << ", distance: " << distance.GetMagnitude() << std::endl;
+         }                                                                                                        
+
+         found_hits.clear();  
+	 }
+    
+	 return STATUS_CODE_SUCCESS;
   }
 
   //------------------------------------------------------------------------------------------------------------------------------------------
@@ -165,12 +317,29 @@ namespace arbor_content
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  StatusCode IsoHitRemovalAlgorithm::MergeCaloHits(const MCParticleToCaloHitListMap &mcParticleToCaloHitListMap,
-		                                                  const MCParticleToClusterMap &mcParticleToClusterMap) const
+  int IsoHitRemovalAlgorithm::GetMCParticle(const Cluster* pCluster) const
   {
-	int nHitMerged = 0;
-	int nPassed = 0;
+	const MCParticle * pMCParticle = NULL;
 
+	try
+	{
+		pMCParticle = MCParticleHelper::GetMainMCParticle(pCluster);
+	}
+    catch (StatusCodeException &)
+    {
+    }
+
+	int mcpPID = pMCParticle->GetParticleId();
+	//bool isNeutralCluster = !(abs(mcpPID) == 211 || abs(mcpPID) == 321 || abs(mcpPID) == 2212);
+
+	return mcpPID;
+  }
+
+  //------------------------------------------------------------------------------------------------------------------------------------------
+
+  StatusCode IsoHitRemovalAlgorithm::MCMergeCaloHits(const MCParticleToCaloHitListMap &mcParticleToCaloHitListMap,
+		                                             const MCParticleToClusterMap &mcParticleToClusterMap) const
+  {
     for (MCParticleToCaloHitListMap::const_iterator mapIter = mcParticleToCaloHitListMap.begin(), 
 	    mapIterEnd = mcParticleToCaloHitListMap.end(); mapIter != mapIterEnd; ++mapIter)
     {
@@ -180,10 +349,9 @@ namespace arbor_content
       if (pCaloHitList->size()>0)
       {
 		// get the cluster which will merge hits by MCP
-
 		MCParticleToClusterMap::const_iterator iter(mcParticleToClusterMap.find(pMCParticle));
 
-		if(iter == mcParticleToClusterMap.end()) 
+		if(iter == mcParticleToClusterMap.end())
 		{
 			// create new cluster for isolated hit
 			CreateCluster(pCaloHitList);
@@ -191,19 +359,14 @@ namespace arbor_content
 		else
 		{
 		    const Cluster* const pCluster = iter->second;
+	
+			std::cout << " |------>  cluster to add hits: " << GetMCParticle(pCluster) << ":: " << pCaloHitList->size() << std::endl;
 
 		    for(CaloHitList::const_iterator caloHitIter = pCaloHitList->begin(); caloHitIter != pCaloHitList->end(); ++caloHitIter)
 		    {
 		    	const CaloHit* const caloHit = *caloHitIter;
 
-		    	// only for neutral particle ?
-
-		    	//std::cout << "++++++ Add hit to cluster: " << pCluster << ", " << caloHit << std::endl;
-		    	//std::cout << pCluster->GetHadronicEnergy() << std::endl;
-		    	//PandoraContentApi::AddIsolatedToCluster(*this, pCluster, caloHit);
 		    	PandoraContentApi::AddToCluster(*this, pCluster, caloHit);
-		    	//std::cout << "  adding done..." << std::endl;
-		    	++nHitMerged;
 		    }
 		}
 	  }
@@ -212,6 +375,32 @@ namespace arbor_content
     }
 
 	//std::cout << "   ==== hit merged: " << nHitMerged << ", hit passed: " << nPassed << std::endl;
+
+	return STATUS_CODE_SUCCESS;
+  }
+
+  //------------------------------------------------------------------------------------------------------------------------------------------
+
+  StatusCode IsoHitRemovalAlgorithm::MergeCaloHits(const CaloHitList& isoHitList, const ClusterList& clusterList)
+  {
+    for (CaloHitList::const_iterator hitIter = isoHitList.begin(); hitIter != isoHitList.end(); ++hitIter)
+    {
+      const CaloHit* const pCaloHit = *hitIter;
+
+	  std::vector<const CaloHit*> nearbyHits;
+	  
+	  float wideX = 100.;
+	  float wideY = 100.;
+	  float wideZ = 100.;
+
+	  int   layers = 3;
+
+	  SearchNearbyCaloHits(pCaloHit, nearbyHits, wideX, wideY, wideZ, layers);
+
+    }
+
+	clusterList.size();
+	//SearchNearbyClusters(pCaloHit, nearbyClusters);
 
 	return STATUS_CODE_SUCCESS;
   }
@@ -229,10 +418,22 @@ namespace arbor_content
     parameters.m_caloHitList = *pCaloHitList;
 
 	//std::cout << " need to CreateCluster" << std::endl;
-
+	//
 
     PANDORA_THROW_RESULT_IF(STATUS_CODE_SUCCESS, !=, PandoraContentApi::Cluster::Create(*this, parameters, pCluster));
-    //PandoraContentApi::Cluster::Create(*this, parameters, pCluster);
+	float clusterEnergy = pCluster->GetHadronicEnergy();
+
+	// FIXME
+	if(clusterEnergy<0.02) // GeV
+	{
+		PANDORA_THROW_RESULT_IF(STATUS_CODE_SUCCESS, !=, PandoraContentApi::Delete(*this, pCluster));
+	}
+	else 
+	{
+		std::cout << " |------>  created a cluster with PID: " << GetMCParticle(pCluster) << std::endl;
+	}
+
+    //PandoraContentApi::Cluster::Create(*this, parameters, pCluster);	
   }
 
   //------------------------------------------------------------------------------------------------------------------------------------------

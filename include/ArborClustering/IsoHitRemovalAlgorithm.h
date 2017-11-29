@@ -11,6 +11,11 @@
 #define ISOHITREMOVALALGORITHM_H 1
 
 #include "Pandora/Algorithm.h"
+#include "ArborUtility/KDTreeLinkerAlgoT.h"
+
+typedef arbor_content::KDTreeLinkerAlgo<const pandora::CaloHit*, 4> HitKDTree;
+typedef arbor_content::KDTreeNodeInfoT<const pandora::CaloHit*, 4> HitKDNode;
+typedef map<const pandora::CaloHit*, const pandora::Cluster*> HitsToClustersMap;
 
 namespace arbor_content
 {
@@ -84,17 +89,32 @@ private:
      *  @param  mcParticleToHitListMap the mc particle to hit list map
      */
 
-	pandora::StatusCode MergeCaloHits(const MCParticleToCaloHitListMap &mcParticleToCaloHitListMap,
-			                          const MCParticleToClusterMap &mcParticleToClusterMap) const;
 
 	void CreateCluster(const pandora::CaloHitList *const caloHitList) const;
 
-    //pandora::IntVector  m_particleIdList;               ///< list of particle ids of MCPFOs to be selected
+	int GetMCParticle(const pandora::Cluster* pCluster) const;
+
+	pandora::StatusCode Test();
+	pandora::StatusCode GetIsoHits(pandora::CaloHitList& caloHitList, MCParticleToCaloHitListMap& mcParticleToCaloHitListMap);
+    pandora::StatusCode GetClusters(pandora::ClusterList& clusterList, MCParticleToClusterMap& mcParticleToClusterMap);
+  
+	pandora::StatusCode MCMergeCaloHits(const MCParticleToCaloHitListMap &mcParticleToCaloHitListMap,
+			                          const MCParticleToClusterMap &mcParticleToClusterMap) const;
+
+	pandora::StatusCode MergeCaloHits(const pandora::CaloHitList& isoHitList, const pandora::ClusterList& clusterList);
+  
+	pandora::StatusCode BuildKDTree(HitKDTree& hits_kdtree);
+  
+	pandora::StatusCode SearchNearbyCaloHits(const pandora::CaloHit* pCaloHit, std::vector<const pandora::CaloHit*>& nearbyHits,
+			                                 float wideX, float wideY, float wideZ, int layers);
+
     //bool                m_shouldUseOnlyECalHits;        ///< Whether to only use ecal hits in the clustering algorithm
     //bool                m_shouldUseIsolatedHits;        ///< Whether to use isolated hits in the clustering algorithm
     //bool                m_simpleMCParticleCollection;   ///< Whether to use simple mc particle collection mechanism, or full mechanism
     //float               m_minWeightFraction;            ///< The minimum mc particle calo hit weight for clustering consideration
-	int                   m_CaloHitMCGetterFailures;
+	//int                 m_CaloHitMCGetterFailures;
+	
+	HitKDTree*            m_hitsKDTree;
 };
 
 //------------------------------------------------------------------------------------------------------------------------------------------
