@@ -498,22 +498,42 @@ namespace arbor_content
 	//
 
     PANDORA_THROW_RESULT_IF(STATUS_CODE_SUCCESS, !=, PandoraContentApi::Cluster::Create(*this, parameters, pCluster));
+
+	if(pCluster==NULL) 
+	{
+		std::cout << " --- cluster not created... " << std::endl;
+		return;
+	}
+
 	float clusterEnergy = pCluster->GetHadronicEnergy();
+	std::cout << "cluster energy: " << clusterEnergy << std::endl;
 
 	// FIXME
-	if(clusterEnergy<0.02) // GeV
+	if(clusterEnergy<0.01 && pCaloHitList->size() <=1 )
 	{
+		std::cout << " |=====>  a cluster with energy: " << pCluster->GetHadronicEnergy() 
+			      << ", hit size: " << pCaloHitList->size() << ", not created ..." << std::endl;
+
 		PANDORA_THROW_RESULT_IF(STATUS_CODE_SUCCESS, !=, PandoraContentApi::Delete(*this, pCluster));
 	}
 	else 
 	{
+		int pid = 0;
+
+	    try
+	    {
+           const MCParticle *const pMCParticle(MCParticleHelper::GetMainMCParticle(pCluster));
+		   pid = pMCParticle->GetParticleId();
+	    }
+        catch (StatusCodeException &)
+        {
+        }
+
 #if 1
-		std::cout << " |------>  created a cluster with PID: " << GetMCParticle(pCluster) 
-			      << ", energy: " << pCluster->GetHadronicEnergy() << ", hit size: " << pCaloHitList->size() << std::endl;
+		std::cout << " |------>  created a cluster with PID: " << pid << ", energy: " << pCluster->GetHadronicEnergy() 
+			      << ", hit size: " << pCaloHitList->size() << std::endl;
 #endif
 	}
-
-    //PandoraContentApi::Cluster::Create(*this, parameters, pCluster);	
   }
 
   //------------------------------------------------------------------------------------------------------------------------------------------
