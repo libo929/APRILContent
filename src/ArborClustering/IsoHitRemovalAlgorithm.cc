@@ -15,6 +15,9 @@
 
 using namespace pandora;
 
+//FIXME
+HitKDTree hitsKDTree;
+
 namespace arbor_content
 {
 
@@ -28,9 +31,12 @@ namespace arbor_content
   {
 	//Test();
 	
-	m_hitsKDTree = new HitKDTree;
-	BuildKDTree(*m_hitsKDTree);
-	
+	/////////
+	hitsKDTree.clear();
+	BuildKDTree(hitsKDTree);
+	hitsKDTree.clear();
+
+	/////////
 	CaloHitList isoHitList;
     MCParticleToCaloHitListMap mcParticleToCaloHitListMap;
 
@@ -43,6 +49,7 @@ namespace arbor_content
 	GetClusters(clusterList, mcParticleToClusterMap);
 	std::cout << "cluster size: " << clusterList.size() << std::endl;
 
+#if 1
 	/////////
     const ClusterList *pNewClusterList = NULL; std::string newClusterListName;
     PANDORA_RETURN_RESULT_IF(STATUS_CODE_SUCCESS, !=, PandoraContentApi::CreateTemporaryListAndSetCurrent(*this, pNewClusterList, newClusterListName));
@@ -75,10 +82,13 @@ namespace arbor_content
       PANDORA_RETURN_RESULT_IF(STATUS_CODE_SUCCESS, !=, PandoraContentApi::SaveList<Cluster>(*this, m_outputClusterListName));
     }
 
-	std::cout << "======== mcParticleToCaloHitListMap size: " << mcParticleToCaloHitListMap.size() << std::endl;
-	std::cout << "======== mcParticleToClusterMap size: " << mcParticleToClusterMap.size() << std::endl;
+#endif
 
-	delete m_hitsKDTree;
+	hitsKDTree.clear();
+
+
+	//std::cout << "======== mcParticleToCaloHitListMap size: " << mcParticleToCaloHitListMap.size() << std::endl;
+	//std::cout << "======== mcParticleToClusterMap size: " << mcParticleToClusterMap.size() << std::endl;
 
     return STATUS_CODE_SUCCESS;
   }
@@ -133,7 +143,6 @@ namespace arbor_content
 			caloHitList.insert(caloHit);
 		}
 	
-		//CreateCluster(&caloHitList);
 		clusterHitsCollection.push_back(caloHitList);
 	}
 
@@ -217,7 +226,7 @@ namespace arbor_content
      }   
 
      KDTreeTesseract hitsBoundingRegion = fill_and_bound_4d_kd_tree(this, hit_list, hit_nodes, true);
-     hits_kdtree.build(hit_nodes,hitsBoundingRegion);
+     hits_kdtree.build(hit_nodes, hitsBoundingRegion);
      hit_nodes.clear();
 
 	 return STATUS_CODE_SUCCESS;
@@ -225,8 +234,8 @@ namespace arbor_content
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  StatusCode IsoHitRemovalAlgorithm::SearchNearbyCaloHits(const CaloHit* pCaloHit, std::vector<const CaloHit*>& nearbyHits,
-		                                                  float wideX, float wideY, float wideZ, int layers)
+  StatusCode IsoHitRemovalAlgorithm::SearchNearbyCaloHits(const CaloHit* pCaloHit, 
+              std::vector<const CaloHit*>& nearbyHits, float wideX, float wideY, float wideZ, int layers)
   {
      std::vector<HitKDNode> found_hits; 
 
@@ -234,7 +243,7 @@ namespace arbor_content
 	 //std::cout << "hit center: " << hitPosition << std::endl;
 
      KDTreeTesseract searchRegionHits = build_4d_kd_search_region(hitPosition, wideX, wideY, wideZ, layers); 
-     m_hitsKDTree->search(searchRegionHits, found_hits);
+     hitsKDTree.search(searchRegionHits, found_hits);
 
      for (const auto &hit : found_hits)                                                                       
      {
@@ -498,7 +507,10 @@ namespace arbor_content
 	}
 	else 
 	{
-		std::cout << " |------>  created a cluster with PID: " << GetMCParticle(pCluster) << std::endl;
+#if 1
+		std::cout << " |------>  created a cluster with PID: " << GetMCParticle(pCluster) 
+			      << ", energy: " << pCluster->GetHadronicEnergy() << ", hit size: " << pCaloHitList->size() << std::endl;
+#endif
 	}
 
     //PandoraContentApi::Cluster::Create(*this, parameters, pCluster);	

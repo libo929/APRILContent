@@ -41,8 +41,6 @@ public:
     IsoHitRemovalAlgorithm();
 
 
-protected:
-
 private:
     pandora::StatusCode Run();
     pandora::StatusCode ReadSettings(const pandora::TiXmlHandle xmlHandle);
@@ -105,15 +103,14 @@ private:
   
 	pandora::StatusCode BuildKDTree(HitKDTree& hits_kdtree);
   
-	pandora::StatusCode SearchNearbyCaloHits(const pandora::CaloHit* pCaloHit, std::vector<const pandora::CaloHit*>& nearbyHits,
-			                                 float wideX, float wideY, float wideZ, int layers);
+	pandora::StatusCode SearchNearbyCaloHits(const pandora::CaloHit* pCaloHit, 
+			std::vector<const pandora::CaloHit*>& nearbyHits, float wideX, float wideY, float wideZ, int layers);
+
     pandora::StatusCode MeanShiftClustering(pandora::CaloHitList& isoHitList, std::vector<pandora::CaloHitList>& clusterHitsCollection);
 
 private:
 	float                 m_kernelBandwidth;
 	float                 m_clusterEpsilon;
-	
-	HitKDTree*            m_hitsKDTree;
 };
 
 //------------------------------------------------------------------------------------------------------------------------------------------
