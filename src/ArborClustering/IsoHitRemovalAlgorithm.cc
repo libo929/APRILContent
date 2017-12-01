@@ -11,6 +11,7 @@
 #include "Pandora/AlgorithmHeaders.h"
 
 #include "ArborClustering/IsoHitRemovalAlgorithm.h"
+#include "ArborUtility/MeanShift.h"
 
 using namespace pandora;
 
@@ -42,9 +43,19 @@ namespace arbor_content
 	GetClusters(clusterList, mcParticleToClusterMap);
 	std::cout << "cluster size: " << clusterList.size() << std::endl;
 
+	/////////
     const ClusterList *pNewClusterList = NULL; std::string newClusterListName;
     PANDORA_RETURN_RESULT_IF(STATUS_CODE_SUCCESS, !=, PandoraContentApi::CreateTemporaryListAndSetCurrent(*this, pNewClusterList, newClusterListName));
 
+	std::vector<CaloHitList> clusterHitsCollection;
+	MeanShiftClustering(isoHitList, clusterHitsCollection);
+
+	for(int iList = 0; iList < clusterHitsCollection.size(); ++iList)
+	{
+		CreateCluster(&clusterHitsCollection.at(iList));
+	}
+
+#if 0
 #if 0
     if(mcParticleToCaloHitListMap.empty() == false && mcParticleToClusterMap.empty() == false)
 	{ 
@@ -55,6 +66,7 @@ namespace arbor_content
 	{
 		MergeCaloHits(isoHitList, clusterList);
 	}
+#endif
 #endif
 
 	std::string m_outputClusterListName("ClustersFromIsoHits");
@@ -73,6 +85,63 @@ namespace arbor_content
 
   //------------------------------------------------------------------------------------------------------------------------------------------
   
+  StatusCode IsoHitRemovalAlgorithm::MeanShiftClustering(CaloHitList& isoHitList, std::vector<CaloHitList>& clusterHitsCollection)
+  {
+	double shift_epsilon = 0.000001;
+
+	MeanShift meanShift(m_kernelBandwidth, m_clusterEpsilon, shift_epsilon);
+
+	vector<MSPoint> msCaloHitPoints;
+
+	for(CaloHitList::iterator caloHitIter = isoHitList.begin(); caloHitIter != isoHitList.end(); ++caloHitIter)
+	{
+		CartesianVector hitPosition((*caloHitIter)->GetPositionVector());
+		
+		MSPoint msp(*caloHitIter);
+		msp.push_back(hitPosition.GetX());
+		msp.push_back(hitPosition.GetY());
+		msp.push_back(hitPosition.GetZ());
+
+		msCaloHitPoints.push_back(msp);
+	}
+
+	std::vector<MSCluster> msClusters = meanShift.cluster(msCaloHitPoints);
+
+    std::cout << "  ======>>> meanshift cluster size: " << msClusters.size() << std::endl;	
+
+	for(int iMSCluster = 0; iMSCluster < msClusters.size(); ++iMSCluster)
+	{
+		MSCluster& msCluster = msClusters.at(iMSCluster);
+		std::vector<MSPoint>& caloHitPoints = msCluster.original_points;
+
+#if 0
+		std::cout << "|---> cluster: " << iMSCluster << std::endl;
+#endif
+
+		CaloHitList caloHitList;
+		for(int iPoint = 0; iPoint < caloHitPoints.size(); ++iPoint)
+		{
+			MSPoint& hit = caloHitPoints.at(iPoint);
+			const CaloHit* caloHit = hit.m_caloHit;
+			CartesianVector hitPos(caloHit->GetPositionVector());
+
+#if 0
+			std::cout << "  ----> hit point: " << hit.at(0) << ", " << hit.at(1) << ", " << hit.at(2) 
+				      << " --|-- " << hitPos.GetX() << ", " << hitPos.GetY() << ", " << hitPos.GetZ() << std::endl;
+#endif
+
+			caloHitList.insert(caloHit);
+		}
+	
+		//CreateCluster(&caloHitList);
+		clusterHitsCollection.push_back(caloHitList);
+	}
+
+	return STATUS_CODE_SUCCESS;
+  }
+
+  //------------------------------------------------------------------------------------------------------------------------------------------
+
   StatusCode IsoHitRemovalAlgorithm::GetIsoHits(CaloHitList& isoHitList, MCParticleToCaloHitListMap& mcParticleToCaloHitListMap)
   {
     const CaloHitList *pCaloHitList = NULL;
@@ -396,7 +465,6 @@ namespace arbor_content
 	  int   layers = 3;
 
 	  SearchNearbyCaloHits(pCaloHit, nearbyHits, wideX, wideY, wideZ, layers);
-
     }
 
 	clusterList.size();
@@ -438,8 +506,17 @@ namespace arbor_content
 
   //------------------------------------------------------------------------------------------------------------------------------------------
   
-  StatusCode IsoHitRemovalAlgorithm::ReadSettings(const TiXmlHandle )
+  StatusCode IsoHitRemovalAlgorithm::ReadSettings(const TiXmlHandle xmlHandle)
   {
+	m_kernelBandwidth = 100.;
+
+    PANDORA_RETURN_RESULT_IF_AND_IF(pandora::STATUS_CODE_SUCCESS, pandora::STATUS_CODE_NOT_FOUND, !=, pandora::XmlHelper::ReadValue(xmlHandle,
+        "KernelBandwidth", m_kernelBandwidth));
+
+	m_clusterEpsilon = 30.;
+    PANDORA_RETURN_RESULT_IF_AND_IF(pandora::STATUS_CODE_SUCCESS, pandora::STATUS_CODE_NOT_FOUND, !=, pandora::XmlHelper::ReadValue(xmlHandle,
+        "ClusterEpsilon", m_clusterEpsilon));
+
     return STATUS_CODE_SUCCESS;
   }
 

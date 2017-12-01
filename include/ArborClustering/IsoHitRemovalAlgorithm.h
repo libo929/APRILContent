@@ -107,12 +107,11 @@ private:
   
 	pandora::StatusCode SearchNearbyCaloHits(const pandora::CaloHit* pCaloHit, std::vector<const pandora::CaloHit*>& nearbyHits,
 			                                 float wideX, float wideY, float wideZ, int layers);
+    pandora::StatusCode MeanShiftClustering(pandora::CaloHitList& isoHitList, std::vector<pandora::CaloHitList>& clusterHitsCollection);
 
-    //bool                m_shouldUseOnlyECalHits;        ///< Whether to only use ecal hits in the clustering algorithm
-    //bool                m_shouldUseIsolatedHits;        ///< Whether to use isolated hits in the clustering algorithm
-    //bool                m_simpleMCParticleCollection;   ///< Whether to use simple mc particle collection mechanism, or full mechanism
-    //float               m_minWeightFraction;            ///< The minimum mc particle calo hit weight for clustering consideration
-	//int                 m_CaloHitMCGetterFailures;
+private:
+	float                 m_kernelBandwidth;
+	float                 m_clusterEpsilon;
 	
 	HitKDTree*            m_hitsKDTree;
 };

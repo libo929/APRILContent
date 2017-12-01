@@ -3,13 +3,26 @@
 
 #include <vector>
 
-typedef std::vector<double> Point;
+#include "Objects/CaloHit.h"
 
-struct Cluster 
+//typedef std::vector<double> MSPoint;
+
+class MSPoint : public std::vector<double>
 {
-    Point mode;
-    std::vector<Point> original_points;
-    std::vector<Point> shifted_points;
+public:
+	MSPoint(const pandora::CaloHit* pCaloHit = NULL) 
+	{
+		m_caloHit = pCaloHit;
+	}
+
+	const pandora::CaloHit* m_caloHit;
+};
+
+struct MSCluster 
+{
+    MSPoint mode;
+    std::vector<MSPoint> original_points;
+    std::vector<MSPoint> shifted_points;
 };
 
 class MeanShift 
@@ -17,12 +30,12 @@ class MeanShift
 public:
     MeanShift(double kernelBandwidth = 0.1, double clusterEpsilon = 0.5, double shiftEpsilon = 0.00001);
 
-    std::vector<Cluster> cluster(const std::vector<Point>&);
+    std::vector<MSCluster> cluster(const std::vector<MSPoint>&);
 
 private:
-    void shift_point(const Point&, const std::vector<Point>&, double, Point&);
-    std::vector<Point> meanshift(const std::vector<Point>& points, double kernel_bandwidth, double shiftEpsilon);
-    std::vector<Cluster> cluster(const std::vector<Point>&, const std::vector<Point>&, double clusterEpsilon);
+    void shift_point(const MSPoint&, const std::vector<MSPoint>&, double, MSPoint&);
+    std::vector<MSPoint> meanshift(const std::vector<MSPoint>& points, double kernel_bandwidth, double shiftEpsilon);
+    std::vector<MSCluster> cluster(const std::vector<MSPoint>&, const std::vector<MSPoint>&, double clusterEpsilon);
 
     double m_kernelBandwidth;
 	double m_clusterEpsilon;

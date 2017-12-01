@@ -34,7 +34,7 @@ MeanShift::MeanShift(double kernelBandwidth, double clusterEpsilon, double shift
 {
 }
 
-void MeanShift::shift_point(const Point &point, const std::vector<Point> &points, double kernel_bandwidth, Point &shifted_point) 
+void MeanShift::shift_point(const MSPoint &point, const std::vector<MSPoint> &points, double kernel_bandwidth, MSPoint &shifted_point) 
 {
     shifted_point.resize(point.size());
     
@@ -47,7 +47,7 @@ void MeanShift::shift_point(const Point &point, const std::vector<Point> &points
 
     for(int i=0; i<points.size(); i++)
 	{
-        const Point& temp_point = points[i];
+        const MSPoint& temp_point = points[i];
         double distance = euclidean_distance(point, temp_point);
         double weight = gaussian_kernel(distance, kernel_bandwidth);
 
@@ -65,17 +65,19 @@ void MeanShift::shift_point(const Point &point, const std::vector<Point> &points
 	{
         shifted_point[i] *= total_weight_inv;
     }
+
+	shifted_point.m_caloHit = point.m_caloHit;
 }
 
-std::vector<Point> MeanShift::meanshift(const std::vector<Point> &points, double kernel_bandwidth, double shiftEpsilon)
+std::vector<MSPoint> MeanShift::meanshift(const std::vector<MSPoint> &points, double kernel_bandwidth, double shiftEpsilon)
 {
     double EPSILON_SQR = shiftEpsilon * shiftEpsilon;
 
     vector<bool> stop_moving(points.size(), false);
-    vector<Point> shifted_points = points;
+    vector<MSPoint> shifted_points = points;
     double max_shift_distance;
 
-    Point point_new;
+    MSPoint point_new;
 
     do {
         max_shift_distance = 0;
@@ -105,9 +107,9 @@ std::vector<Point> MeanShift::meanshift(const std::vector<Point> &points, double
     return shifted_points;
 }
 
-vector<Cluster> MeanShift::cluster(const std::vector<Point> &points, const std::vector<Point> &shifted_points, double clusterEpsilon)
+vector<MSCluster> MeanShift::cluster(const std::vector<MSPoint> &points, const std::vector<MSPoint> &shifted_points, double clusterEpsilon)
 {
-    vector<Cluster> clusters;
+    vector<MSCluster> clusters;
 
     for (int i = 0; i < shifted_points.size(); i++) 
 	{
@@ -119,7 +121,7 @@ vector<Cluster> MeanShift::cluster(const std::vector<Point> &points, const std::
         }
 
         if (c == clusters.size()) {
-            Cluster clus;
+            MSCluster clus;
             clus.mode = shifted_points[i];
             clusters.push_back(clus);
         }
@@ -131,9 +133,9 @@ vector<Cluster> MeanShift::cluster(const std::vector<Point> &points, const std::
     return clusters;
 }
 
-vector<Cluster> MeanShift::cluster(const std::vector<Point> &points)
+vector<MSCluster> MeanShift::cluster(const std::vector<MSPoint> &points)
 {
-    vector<Point> shifted_points = meanshift(points, m_kernelBandwidth, m_shiftEpsilon);
+    vector<MSPoint> shifted_points = meanshift(points, m_kernelBandwidth, m_shiftEpsilon);
 
     return cluster(points, shifted_points, m_clusterEpsilon);
 }
