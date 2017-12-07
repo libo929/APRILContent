@@ -12,6 +12,7 @@
 
 #include "ArborClustering/IsoHitRemovalAlgorithm.h"
 #include "ArborUtility/MeanShift.h"
+#include "ArborUtility/ClusterShape.h"
 
 using namespace pandora;
 
@@ -533,6 +534,13 @@ namespace arbor_content
 		std::cout << " |------>  created a cluster with PID: " << pid << ", energy: " << pCluster->GetHadronicEnergy() 
 			      << ", hit size: " << pCaloHitList->size() << std::endl;
 #endif
+
+		if(pCaloHitList->size()>=5)
+		{
+			ClusterShape cs(pCluster);
+			double csFactor = cs.CalcClusterShapeFactor();
+			std::cout << "   |------> shape factor: " << csFactor << std::endl;
+		}
 	}
   }
 
