@@ -1,11 +1,7 @@
 /**
- *  @file   ArborContent/src/ArborCheating/IsoHitRemovalAlgorithm.cc
+ *
+ * This algorithm is to remove isolated hits by creating clusters
  * 
- *  @brief  Implementation of the cheating clustering algorithm class
- * 
- *  $Log: $
- *  @author J. Marshall.
- *  Copied from https://github.com/PandoraPFA/LCContent sources
  */
 
 #include "Pandora/AlgorithmHeaders.h"
@@ -35,7 +31,7 @@ namespace arbor_content
 	/////////
 	hitsKDTree.clear();
 	BuildKDTree(hitsKDTree);
-	hitsKDTree.clear();
+	//hitsKDTree.clear();
 
 	/////////
 	CaloHitList isoHitList;
@@ -86,6 +82,8 @@ namespace arbor_content
 #endif
 
 	hitsKDTree.clear();
+
+	//////
 
 
 	//std::cout << "======== mcParticleToCaloHitListMap size: " << mcParticleToCaloHitListMap.size() << std::endl;
@@ -540,6 +538,9 @@ namespace arbor_content
 			ClusterShape cs(pCluster);
 			double csFactor = cs.CalcClusterShapeFactor();
 			std::cout << "   |------> shape factor: " << csFactor << std::endl;
+
+			// cluster shape factor < 0.2 : track-like
+			// cluster shape factor > 0.2 : blob
 		}
 	}
   }
