@@ -78,6 +78,8 @@ namespace arbor_content
 		clusterList.insert(pCluster);
 	}
 
+	std::cout << "cluster list " << listName << " size: " << clusterList.size() << std::endl;
+
     return pandora::STATUS_CODE_SUCCESS;
   }
 

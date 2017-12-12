@@ -50,6 +50,7 @@
 #include "ArborClustering/SimpleRegionClusteringAlgorithm.h"
 #include "ArborClustering/IsoHitRemovalAlgorithm.h"
 #include "ArborClustering/IsoHitClusteringAlgorithm.h"
+#include "ArborClustering/FragmentsFromIsoHitsMergingAlgorithm.h"
 
 #include "ArborHelpers/CaloHitHelper.h"
 #include "ArborHelpers/ClusterHelper.h"
@@ -124,6 +125,7 @@ public:
     d("PerfectIsoHitRemoval",                arbor_content::PerfectIsoHitRemovalAlgorithm::Factory) \
     d("IsoHitRemoval",                       arbor_content::IsoHitRemovalAlgorithm::Factory) \
     d("IsoHitClustering",                    arbor_content::IsoHitClusteringAlgorithm::Factory) \
+    d("FragmentsFromIsoHitsMerging",         arbor_content::FragmentsFromIsoHitsMergingAlgorithm::Factory) \
     d("PerfectNeutralHitRecovery",           arbor_content::PerfectNeutralHitRecoveryAlgorithm::Factory) \
     d("CheatingTrackToClusterMatching",      arbor_content::CheatingTrackToClusterMatching::Factory) \
     d("ArborClustering",                     arbor_content::ArborClusteringAlgorithm::Factory) \
