@@ -206,6 +206,7 @@ namespace arbor_content
     if(NULL == pCluster)
       return false;
 
+	// ???
     if(!PandoraContentApi::IsAvailable(*this, pCluster))
       return false;
 
