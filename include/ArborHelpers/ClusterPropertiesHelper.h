@@ -26,6 +26,10 @@ namespace arbor_content
 			static pandora::StatusCode GetAxisInformation(std::vector<TVector3>& relativePositionVector, 
 				  std::vector<float>& hitWeightVector, float weightSum, 
 	              TVector3& clusterMainAxis, float& axisLengthRatio, float& shortAxisLengthRatio);
+
+			static pandora::StatusCode CalcClusterProperties(const pandora::Cluster* pCluster, 
+				  float& minHitLayer, float& clusterVol, float& energyRatio, 
+				  float& hitOutsideRatio, float& axisLengthRatio, float& shortAxisLengthRatio, TVector3& axis);
 	};
 }
 

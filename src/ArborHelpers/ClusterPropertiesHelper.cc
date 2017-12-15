@@ -4,9 +4,9 @@
 
 #include "TMatrixDSymEigen.h"
 
-pandora::StatusCode arbor_content::ClusterPropertiesHelper::GetClusterProperties(const pandora::Cluster* pCluster, 
+pandora::StatusCode arbor_content::ClusterPropertiesHelper::CalcClusterProperties(const pandora::Cluster* pCluster, 
 		 float& minHitLayer, float& clusterVol, float& energyRatio, 
-		 float& hitOutsideRatio, float& axisLengthRatio, float& shortAxisLengthRatio)
+		 float& hitOutsideRatio, float& axisLengthRatio, float& shortAxisLengthRatio, TVector3& axis)
 {
     pandora::CartesianVector centroid(0.f, 0.f, 0.f);
     PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, ClusterHelper::GetCentroid(pCluster, centroid));
@@ -105,8 +105,19 @@ pandora::StatusCode arbor_content::ClusterPropertiesHelper::GetClusterProperties
 
 	//////////// -------->
 	hitOutsideRatio = float(outsideHit)/nHits;
+	axis = clusterMainAxis;
 	
 	return pandora::STATUS_CODE_SUCCESS;
+}
+
+pandora::StatusCode arbor_content::ClusterPropertiesHelper::GetClusterProperties(const pandora::Cluster* pCluster, 
+		 float& minHitLayer, float& clusterVol, float& energyRatio, 
+		 float& hitOutsideRatio, float& axisLengthRatio, float& shortAxisLengthRatio)
+{
+	TVector3 axis;
+
+    return CalcClusterProperties(pCluster, minHitLayer, clusterVol, energyRatio, hitOutsideRatio, axisLengthRatio, shortAxisLengthRatio, 
+			                     axis); // axis is local
 }
 
 pandora::StatusCode arbor_content::ClusterPropertiesHelper::GetAxisInformation(

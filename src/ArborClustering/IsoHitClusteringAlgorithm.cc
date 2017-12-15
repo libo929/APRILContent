@@ -38,6 +38,8 @@ namespace arbor_content
 	}
 
 	std::string m_outputClusterListName("ClustersFromIsoHits");
+	std::cout << "the list " << m_outputClusterListName << " size: " << pNewClusterList->size() << std::endl;
+
     if (!pNewClusterList->empty())
     {
       PANDORA_RETURN_RESULT_IF(STATUS_CODE_SUCCESS, !=, PandoraContentApi::SaveList<Cluster>(*this, m_outputClusterListName));
@@ -139,17 +141,19 @@ namespace arbor_content
 	const Cluster *pCluster = NULL;
 	const CaloHitList* pCaloHitList = caloHitList;
 
-	if(pCaloHitList->size()==0) return;
+	const int MINCLUSTERSIZE = 3;
+
+	if(pCaloHitList->size() < MINCLUSTERSIZE) return;
 
     PandoraContentApi::Cluster::Parameters parameters;
     parameters.m_caloHitList = *pCaloHitList;
 
 	//std::cout << " need to CreateCluster" << std::endl;
 	//
-
+	
     PANDORA_THROW_RESULT_IF(STATUS_CODE_SUCCESS, !=, PandoraContentApi::Cluster::Create(*this, parameters, pCluster));
 
-	if(pCluster==NULL) 
+	if(pCluster==NULL)
 	{
 		std::cout << " --- cluster not created... " << std::endl;
 		return;
@@ -159,7 +163,7 @@ namespace arbor_content
 	std::cout << "cluster energy: " << clusterEnergy << std::endl;
 
 	// FIXME
-	if(clusterEnergy<0.01 && pCaloHitList->size() <=1 )
+	if(clusterEnergy<0.0001)
 	{
 		std::cout << " |=====>  a cluster with energy: " << pCluster->GetHadronicEnergy() 
 			      << ", hit size: " << pCaloHitList->size() << ", not created ..." << std::endl;
@@ -184,6 +188,18 @@ namespace arbor_content
 			      << ", hit size: " << pCaloHitList->size() << std::endl;
 #endif
 	}
+
+#if 0
+	pCluster->SetClusterForCaloHit();
+
+	for(CaloHitList::iterator iter = pCaloHitList->begin(); iter != pCaloHitList->end(); ++iter)
+	{
+		const CaloHit* pCaloHit = *iter;
+
+		std::cout << "-----====----- hit cluster: " << pCaloHit->GetCluster() << std::endl;
+	}
+#endif
+
   }
 
   //------------------------------------------------------------------------------------------------------------------------------------------

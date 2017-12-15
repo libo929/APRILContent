@@ -9,6 +9,9 @@
 #include "ArborClustering/FragmentsFromIsoHitsMergingAlgorithm.h"
 #include "ArborUtility/ClusterShape.h"
 #include "ArborHelpers/ClusterHelper.h"
+#include "ArborHelpers/ClusterPropertiesHelper.h"
+
+#include "TMath.h"
 
 //FIXME
 HitKDTree caloHitsKDTree;
@@ -48,18 +51,100 @@ namespace arbor_content
 
   pandora::StatusCode FragmentsFromIsoHitsMergingAlgorithm::MergeFragments(pandora::ClusterList& mainClusterList, pandora::ClusterList& clustersFromIsoHits)
   {
-	  std::map<pandora::Cluster*, TVector3> mainclusterCentroidMap;
-	  std::map<pandora::Cluster*, TVector3> fragmentCentroidMap;
+	  std::map<const pandora::Cluster*, TVector3> mainclusterCentroidMap;
+	  std::map<const pandora::Cluster*, TVector3> fragmentCentroidMap;
+	  std::map<const pandora::Cluster*, pandora::ClusterList> clusterNearbyFragments;
 
-	  for(pandora::ClusterList::iterator iter = mainClusterList.begin(); iter != mainClusterList.end(); ++iter)
+	  for(pandora::ClusterList::iterator iter = clustersFromIsoHits.begin(); iter != clustersFromIsoHits.end(); ++iter)
 	  {
-		  const pandora::Cluster* pCluster = *iter;
+		  const pandora::Cluster* pFragment = *iter;
+		  pandora::CartesianVector centroid(0.f, 0.f, 0.f);
+
+		  PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, ClusterHelper::GetCentroid(pFragment, centroid));
+
+		  TVector3 centroidVec(centroid.GetX(), centroid.GetY(), centroid.GetZ());
+
+		  fragmentCentroidMap.insert( std::pair<const pandora::Cluster*, TVector3>(pFragment, centroidVec) );
+		  std::cout << "cluster: " << pFragment << "------> " << centroidVec.X() << ", " << centroidVec.Y() << ", " << centroidVec.Z() << std::endl;
+
+			 // fragment's PCA
+			 TVector3 fragmentAxis = GetClustersAxis(pFragment);
+			 fragmentAxis.Unit();
+			 pandora::CartesianVector axis(fragmentAxis.X(), fragmentAxis.Y(), fragmentAxis.Z());
+
+			 TVector3 fragmentCentroid = fragmentCentroidMap.find(pFragment)->second;
+
+			 double openAngle = fragmentCentroid.Angle(fragmentAxis);
+
+			 openAngle = std::min(openAngle, TMath::Pi()-openAngle);
+
+			 std::cout << "-------> nearby fragments : " << pFragment->GetHadronicEnergy() << ", axis: " 
+				       << fragmentAxis.X() << ", " << fragmentAxis.Y() << ", " << fragmentAxis.Z() << ", angle: " << openAngle << std::endl;
+
+			 pFragment->SetCentroid(centroid);
+			 pFragment->SetAxis(axis);
+	  }
+
+	  for(pandora::ClusterList::iterator clusterIter = mainClusterList.begin(); clusterIter != mainClusterList.end(); ++clusterIter)
+	  {
+		  const pandora::Cluster* pCluster = *clusterIter;
 		  pandora::CartesianVector centroid(0.f, 0.f, 0.f);
 
 		  PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, ClusterHelper::GetCentroid(pCluster, centroid));
+
+		  TVector3 clusterCentroid(centroid.GetX(), centroid.GetY(), centroid.GetZ());
+
+		  mainclusterCentroidMap.insert( std::pair<const pandora::Cluster*, TVector3>(pCluster, clusterCentroid) );
+		  std::cout << "cluster: " << pCluster << "---> " << clusterCentroid.X() << ", " << clusterCentroid.Y() << ", " << clusterCentroid.Z() << std::endl;
+		
+		  ///////  
+		  pandora::ClusterList nearbyFragments;
+
+		  for(auto fragIter = fragmentCentroidMap.begin(); fragIter != fragmentCentroidMap.end(); ++fragIter)
+		  {
+			  const pandora::Cluster* pFragment = fragIter->first;
+			  TVector3 fragmentCentroid = fragIter->second;
+
+			  TVector3 cluFragDirection = clusterCentroid - fragmentCentroid;
+
+			  if(cluFragDirection.Mag() < 500.)
+		
+			  {
+				  nearbyFragments.insert(pFragment);
+			  }
+		  }
+
+		  clusterNearbyFragments.insert(std::pair<const pandora::Cluster*, pandora::ClusterList>(pCluster, nearbyFragments));
 	  }
-	  
+
+	  for(auto iter = clusterNearbyFragments.begin(); iter != clusterNearbyFragments.end(); ++iter)
+	  {
+		 const pandora::Cluster* pCluster = iter->first;
+		 pandora::ClusterList fragments = iter->second; 
+
+		 std::cout << "=====> cluster : " << pCluster->GetHadronicEnergy() << std::endl;
+
+		 for(pandora::ClusterList::iterator fragIter = fragments.begin(); fragIter != fragments.end(); ++fragIter)
+		 {
+			 const pandora::Cluster* pFragment = *fragIter;
+		 
+		 }
+	  }
+
 	  return pandora::STATUS_CODE_SUCCESS;
+  }
+
+  //------------------------------------------------------------------------------------------------------------------------------------------
+ 
+  TVector3 FragmentsFromIsoHitsMergingAlgorithm::GetClustersAxis(const pandora::Cluster* pCluster)
+  {
+	  float minHitLayer, clusterVol, energyRatio, hitOutsideRatio, axisLengthRatio, shortAxisLengthRatio;
+	  TVector3 axis;
+
+      ClusterPropertiesHelper::CalcClusterProperties(pCluster, minHitLayer, clusterVol, energyRatio, 
+		                               hitOutsideRatio, axisLengthRatio, shortAxisLengthRatio, axis);
+
+	  return axis;
   }
 
   //------------------------------------------------------------------------------------------------------------------------------------------
