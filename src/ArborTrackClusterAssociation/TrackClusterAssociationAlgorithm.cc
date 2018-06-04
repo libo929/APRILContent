@@ -45,7 +45,7 @@ bool shouldMatch(const pandora::Track* const pTrack, const pandora::Cluster* con
 	}
     catch (pandora::StatusCodeException &e)
 	{
-		std::cout << "Track GetMainMCParticle Exception: " << e.ToString() << std::endl;
+		std::cout << "Track: " << pTrack << " GetMainMCParticle Exception: " << e.ToString() << std::endl;
 		return false;
 	}
 
@@ -55,7 +55,7 @@ bool shouldMatch(const pandora::Track* const pTrack, const pandora::Cluster* con
 	}
     catch (pandora::StatusCodeException &e)
 	{
-		std::cout << "Cluster GetMainMCParticle Exception: " << e.ToString() << std::endl;
+		std::cout << "Cluster: " << pCluster <<  " GetMainMCParticle Exception: " << e.ToString() << std::endl;
 		return false;
 	}
 	

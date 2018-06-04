@@ -1,5 +1,5 @@
 /**
- *  @file   LCContent/src/LCCheating/PerfectClusteringAlgorithmNew.cc
+ *  @file   LCContent/src/LCCheating/PerfectPhotonClusteringAlgorithm.cc
  * 
  *  @brief  Implementation of the perfect particle flow algorithm class
  * 
@@ -11,47 +11,19 @@
 
 #include "Pandora/AlgorithmHeaders.h"
 
-#include "ArborCheating/PerfectClusteringAlgorithmNew.h" // changed path
+#include "ArborCheating/PerfectPhotonClusteringAlgorithm.h" // changed path
 
 using namespace pandora;
 
 namespace arbor_content // changed namespace
 {
 
-HistogramManager AHM;
+extern HistogramManager AHM;
 
-const MCParticle* GetCaloHitMainMCParticle(const CaloHit *const pCaloHit)
-{
-    float bestWeight(0.f);
-    const MCParticle *pBestMCParticle(nullptr);
-    const MCParticleWeightMap &hitMCParticleWeightMap(pCaloHit->GetMCParticleWeightMap());
-
-    MCParticleVector mcParticleVector;
-    for (const MCParticleWeightMap::value_type &mapEntry : hitMCParticleWeightMap) mcParticleVector.push_back(mapEntry.first);
-    std::sort(mcParticleVector.begin(), mcParticleVector.end(), PointerLessThan<MCParticle>());
-
-    for (const MCParticle *const pMCParticle : mcParticleVector)
-    {
-        const float weight(hitMCParticleWeightMap.at(pMCParticle));
-
-        if (weight > bestWeight)
-        {
-            bestWeight = weight;
-            pBestMCParticle = pMCParticle;
-        }
-    }
-
-    if (!pBestMCParticle)
-	{
-		//std::cout << "hitMCParticleWeightMap size: " <<  hitMCParticleWeightMap.size() << std::endl;
-        throw StatusCodeException(STATUS_CODE_NOT_INITIALIZED);
-	}
-
-    return pBestMCParticle;
-}
+extern const MCParticle* GetCaloHitMainMCParticle(const CaloHit *const pCaloHit);
 
 
-PerfectClusteringAlgorithmNew::PerfectClusteringAlgorithmNew() :
+PerfectPhotonClusteringAlgorithm::PerfectPhotonClusteringAlgorithm() :
     m_simpleCaloHitCollection(true),
     m_minWeightFraction(0.01f)
 {
@@ -59,7 +31,7 @@ PerfectClusteringAlgorithmNew::PerfectClusteringAlgorithmNew() :
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 
-StatusCode PerfectClusteringAlgorithmNew::Run()
+StatusCode PerfectPhotonClusteringAlgorithm::Run()
 {
     const MCParticleList *pMCParticleList = NULL;
     PANDORA_RETURN_RESULT_IF(STATUS_CODE_SUCCESS, !=, PandoraContentApi::GetCurrentList(*this, pMCParticleList));
@@ -108,7 +80,7 @@ StatusCode PerfectClusteringAlgorithmNew::Run()
 			float mcEnergy = pMCParticle->GetEnergy();
 			int   mcPdg = pMCParticle->GetParticleId();
 
-		    std::string tupleName = "PerfectClusteringAlgorithmNew" + string(__func__) + string("cluster");
+		    std::string tupleName = "PerfectPhotonClusteringAlgorithm" + string(__func__) + string("cluster");
 		    std::string varListName = "mcEnergy:cluEnergy:mcPdg";
 		    std::vector<float> vars;
 		    vars.push_back( mcEnergy );
@@ -117,7 +89,7 @@ StatusCode PerfectClusteringAlgorithmNew::Run()
 	        AHM.CreateFill(tupleName, varListName, vars);
 		}
 
-		std::string tupleName = "PerfectClusteringAlgorithmNew" + string(__func__);
+		std::string tupleName = "PerfectPhotonClusteringAlgorithm" + string(__func__);
 		std::string varListName = "clusterSize";
 		std::vector<float> vars;
 
@@ -134,8 +106,17 @@ StatusCode PerfectClusteringAlgorithmNew::Run()
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 
-void PerfectClusteringAlgorithmNew::CaloHitCollection(const MCParticle *const pPfoTarget, PfoParameters &pfoParameters) const
+void PerfectPhotonClusteringAlgorithm::CaloHitCollection(const MCParticle *const pPfoTarget, PfoParameters &pfoParameters) const
 {
+	int mcPdg = pPfoTarget->GetParticleId();
+
+	bool onlyPhoton = true;
+	
+	if((onlyPhoton && mcPdg!=22))
+	{
+		return ;
+	}
+
     const CaloHitList *pCaloHitList = NULL;
     PANDORA_THROW_RESULT_IF(STATUS_CODE_SUCCESS, !=, PandoraContentApi::GetCurrentList(*this, pCaloHitList));
 
@@ -166,6 +147,7 @@ void PerfectClusteringAlgorithmNew::CaloHitCollection(const MCParticle *const pP
             if (caloHitList.empty())
                 continue;
 
+
             if (NULL == pCluster)
             {			
 					PANDORA_THROW_RESULT_IF(STATUS_CODE_SUCCESS, !=, PandoraContentApi::Cluster::Create(*this, parameters, pCluster));
@@ -186,7 +168,7 @@ void PerfectClusteringAlgorithmNew::CaloHitCollection(const MCParticle *const pP
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 
-void PerfectClusteringAlgorithmNew::SimpleCaloHitCollection(const MCParticle *const pPfoTarget, const CaloHit *const pCaloHit, CaloHitList &caloHitList) const
+void PerfectPhotonClusteringAlgorithm::SimpleCaloHitCollection(const MCParticle *const pPfoTarget, const CaloHit *const pCaloHit, CaloHitList &caloHitList) const
 {
     const MCParticle *const pHitMCParticle(GetCaloHitMainMCParticle(pCaloHit));
     const MCParticle *const pHitPfoTarget(pHitMCParticle->GetPfoTarget());
@@ -199,7 +181,7 @@ void PerfectClusteringAlgorithmNew::SimpleCaloHitCollection(const MCParticle *co
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 
-void PerfectClusteringAlgorithmNew::FullCaloHitCollection(const MCParticle *const pPfoTarget, const CaloHit *const pCaloHit, CaloHitList &caloHitList) const
+void PerfectPhotonClusteringAlgorithm::FullCaloHitCollection(const MCParticle *const pPfoTarget, const CaloHit *const pCaloHit, CaloHitList &caloHitList) const
 {
     const MCParticleWeightMap mcParticleWeightMap(pCaloHit->GetMCParticleWeightMap());
 
@@ -249,10 +231,15 @@ void PerfectClusteringAlgorithmNew::FullCaloHitCollection(const MCParticle *cons
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
-StatusCode PerfectClusteringAlgorithmNew::ReadSettings(const TiXmlHandle xmlHandle)
+StatusCode PerfectPhotonClusteringAlgorithm::ReadSettings(const TiXmlHandle xmlHandle)
 {
     PANDORA_RETURN_RESULT_IF(STATUS_CODE_SUCCESS, !=, XmlHelper::ReadValue(xmlHandle,
         "OutputClusterListName", m_outputClusterListName));
+
+	//m_onlyPhoton = false;
+
+    //PANDORA_RETURN_RESULT_IF(STATUS_CODE_SUCCESS, !=, XmlHelper::ReadValue(xmlHandle,
+      //  "OnlyPhoton", m_onlyPhoton));
 
     return STATUS_CODE_SUCCESS;
 }

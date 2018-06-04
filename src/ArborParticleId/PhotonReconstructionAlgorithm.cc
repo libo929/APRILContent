@@ -30,9 +30,12 @@
 
 #include "Pandora/AlgorithmHeaders.h"
 #include "ArborHelpers/ClusterHelper.h"
+#include "ArborHelpers/HistogramHelper.h"
 
 namespace arbor_content
 {
+  extern HistogramManager AHM;
+
   pandora::StatusCode PhotonReconstructionAlgorithm::Run()
   {
     // If specified, change the current calo hit list, i.e. the input to the clustering algorithm
@@ -90,6 +93,31 @@ namespace arbor_content
       //std::cout << "  ---> The photon cluster size: " << photonClusters.size() << std::endl;
         
       PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, PandoraContentApi::SaveList(*this, m_clusterListName, photonClusters));
+
+	  /////////////////////
+	  float totalEnergy = 0.;
+
+	  for(auto it=photonClusters.begin(); it != photonClusters.end(); ++it)
+	  {
+		 auto pPhotonCluster = *it;
+
+	     std::string tupleName = "PhotonReconstructionAlgorithm:" + string("gEnergy");
+	     std::string varListName = "photonEnergy";
+	     std::vector<float> vars;
+	     vars.push_back( float(pPhotonCluster->GetElectromagneticEnergy()) );
+	     AHM.CreateFill(tupleName, varListName, vars);
+
+		 totalEnergy += pPhotonCluster->GetElectromagneticEnergy();
+	  }
+
+	  std::string tupleName = "PhotonReconstructionAlgorithm:" + string("gNum");
+	  std::string varListName = "photonNum:totalEnergy";
+	  std::vector<float> vars;
+	  vars.push_back( float(photonClusters.size()) );
+	  vars.push_back( totalEnergy );
+	  AHM.CreateFill(tupleName, varListName, vars);
+
+	  /////////////////////
 
       if (m_replaceCurrentClusterList)
         PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, PandoraContentApi::ReplaceCurrentList<pandora::Cluster>(*this, m_clusterListName));

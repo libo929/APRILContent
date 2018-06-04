@@ -52,6 +52,8 @@ namespace arbor_content
     PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, orderedCaloHitList.Add(*pCaloHitList));
 
 	int nHits(0);
+	int nIsoHits(0);
+
     for(pandora::OrderedCaloHitList::const_iterator iter = orderedCaloHitList.begin(), endIter = orderedCaloHitList.end() ;
         endIter != iter ; ++iter)
     {
@@ -182,9 +184,12 @@ namespace arbor_content
 
         caloHitMetadata.m_isIsolated = isIsolated;
         PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, ArborContentApi::AlterMetadata(*this, pCaloHit, caloHitMetadata));
+
+		if(isIsolated) ++nIsoHits;
       }
     }
-	std::cout << "# of hits: " << nHits << std::endl;
+
+	std::cout << "# of hits: " << nHits << ", isoHits: " << nIsoHits << std::endl;
 
     PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, this->FlagIsolatedHitsWithTracks(orderedCaloHitList));
 
