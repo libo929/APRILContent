@@ -1,5 +1,5 @@
 ########################################################
-# cmake file for building ArborContent documentation
+# cmake file for building APRILContent documentation
 # @author rete , IPNL / CNRS
 ########################################################
 
