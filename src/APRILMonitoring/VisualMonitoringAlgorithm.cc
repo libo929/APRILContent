@@ -478,7 +478,7 @@ namespace april_content
       std::string clusterListName(clusterListTitle);
       if (clusterListName.find(starter) != std::string::npos)
           clusterListName.replace(clusterListName.find(starter), starter.length(), "Clusters/");
-      std::replace_if(clusterListName.begin(), clusterListName.end(), std::bind2nd(std::equal_to<char>(),'\n'), '/');
+	  std::replace(clusterListName.begin(), clusterListName.end(), '\n', '/');
   
       TEveElement *pClusterVectorElement = new TEveElementList();
       pClusterVectorElement->SetElementNameTitle(clusterListName.c_str(), clusterListTitle.c_str());
