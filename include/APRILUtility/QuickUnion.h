@@ -10,7 +10,7 @@
 
 #include <vector>
 
-namespace arbor_content
+namespace april_content
 {
 
 /**

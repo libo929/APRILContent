@@ -24,7 +24,7 @@ namespace pandora { class Algorithm; }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 
-namespace arbor_content
+namespace april_content
 {
 
 /**

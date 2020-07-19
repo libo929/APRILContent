@@ -1,5 +1,5 @@
 /**
- *  @file   ArborContent/src/ArborCheating/PerfectIsoHitRemovalAlgorithm.cc
+ *  @file   APRILContent/src/APRILCheating/PerfectIsoHitRemovalAlgorithm.cc
  * 
  *  @brief  Implementation of the cheating clustering algorithm class
  * 
@@ -10,11 +10,11 @@
 
 #include "Pandora/AlgorithmHeaders.h"
 
-#include "ArborCheating/PerfectIsoHitRemovalAlgorithm.h"
+#include "APRILCheating/PerfectIsoHitRemovalAlgorithm.h"
 
 using namespace pandora;
 
-namespace arbor_content
+namespace april_content
 {
 
   PerfectIsoHitRemovalAlgorithm::PerfectIsoHitRemovalAlgorithm()
@@ -141,12 +141,12 @@ namespace arbor_content
     if (mcParticleToCaloHitListMap.end() == iter)
     {
       CaloHitList *const pCaloHitList = new CaloHitList();
-      pCaloHitList->insert(pCaloHitToAdd);
+      pCaloHitList->push_back(pCaloHitToAdd);
       (void) mcParticleToCaloHitListMap.insert(MCParticleToCaloHitListMap::value_type(pMCParticle, pCaloHitList));
     }
     else
     {
-      iter->second->insert(pCaloHitToAdd);
+      iter->second->push_back(pCaloHitToAdd);
     }
   }
 
@@ -169,7 +169,7 @@ namespace arbor_content
 		                                                  const MCParticleToClusterMap &mcParticleToClusterMap) const
   {
 	int nHitMerged = 0;
-	int nPassed = 0;
+	//int nPassed = 0;
 
     for (MCParticleToCaloHitListMap::const_iterator mapIter = mcParticleToCaloHitListMap.begin(), 
 	    mapIterEnd = mcParticleToCaloHitListMap.end(); mapIter != mapIterEnd; ++mapIter)

@@ -1,21 +1,21 @@
 /**
  *
- *  @file   ArborContent/include/ArborClustering/FragmentsFromIsoHitsMergingAlgorithm.h
+ *  @file   APRILContent/include/APRILClustering/FragmentsFromIsoHitsMergingAlgorithm.h
  * 
  */
 #ifndef FRAGMENTSFROMISOHITSMERGINGALGORITHM_H
 #define FRAGMENTSFROMISOHITSMERGINGALGORITHM_H 1
 
 #include "Pandora/Algorithm.h"
-#include "ArborUtility/KDTreeLinkerAlgoT.h"
+#include "APRILUtility/KDTreeLinkerAlgoT.h"
 
 #include "TVector3.h"
 
-typedef arbor_content::KDTreeLinkerAlgo<const pandora::CaloHit*, 4> HitKDTree;
-typedef arbor_content::KDTreeNodeInfoT<const pandora::CaloHit*, 4> HitKDNode;
+typedef april_content::KDTreeLinkerAlgo<const pandora::CaloHit*, 4> HitKDTree;
+typedef april_content::KDTreeNodeInfoT<const pandora::CaloHit*, 4> HitKDNode;
 typedef map<const pandora::CaloHit*, const pandora::Cluster*> HitsToClustersMap;
 
-namespace arbor_content
+namespace april_content
 {
 
 /**

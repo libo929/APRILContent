@@ -1,5 +1,5 @@
 /**
- *  @file   ArborContent/include/ArborCheating/PerfectIsoHitRemovalAlgorithm.h
+ *  @file   APRILContent/include/APRILCheating/PerfectIsoHitRemovalAlgorithm.h
  * 
  *  @brief  Header file for the cheating clustering algorithm class.
  * 
@@ -12,7 +12,7 @@
 
 #include "Pandora/Algorithm.h"
 
-namespace arbor_content
+namespace april_content
 {
 
 /**

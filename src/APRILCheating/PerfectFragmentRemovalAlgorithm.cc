@@ -1,5 +1,5 @@
 /**
- *  @file   ArborContent/src/ArborCheating/PerfectFragmentRemovalAlgorithm.cc
+ *  @file   APRILContent/src/APRILCheating/PerfectFragmentRemovalAlgorithm.cc
  * 
  *  @brief  Implementation of the cheating clustering algorithm class
  * 
@@ -10,11 +10,11 @@
 
 #include "Pandora/AlgorithmHeaders.h"
 
-#include "ArborCheating/PerfectFragmentRemovalAlgorithm.h"
+#include "APRILCheating/PerfectFragmentRemovalAlgorithm.h"
 
 using namespace pandora;
 
-namespace arbor_content
+namespace april_content
 {
 
   PerfectFragmentRemovalAlgorithm::PerfectFragmentRemovalAlgorithm()
@@ -74,12 +74,12 @@ namespace arbor_content
     if (mcParticleToClusterListMap.end() == iter)
     {
       ClusterList *const pClusterList = new ClusterList();
-      pClusterList->insert(pClusterToAdd);
+      pClusterList->push_back(pClusterToAdd);
       (void) mcParticleToClusterListMap.insert(MCParticleToClusterListMap::value_type(pMCParticle, pClusterList));
     }
     else
     {
-      iter->second->insert(pClusterToAdd);
+      iter->second->push_back(pClusterToAdd);
     }
   }
 

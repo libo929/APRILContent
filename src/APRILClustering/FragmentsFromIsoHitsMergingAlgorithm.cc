@@ -6,17 +6,17 @@
 
 #include "Pandora/AlgorithmHeaders.h"
 
-#include "ArborClustering/FragmentsFromIsoHitsMergingAlgorithm.h"
-#include "ArborUtility/ClusterShape.h"
-#include "ArborHelpers/ClusterHelper.h"
-#include "ArborHelpers/ClusterPropertiesHelper.h"
+#include "APRILClustering/FragmentsFromIsoHitsMergingAlgorithm.h"
+#include "APRILUtility/ClusterShape.h"
+#include "APRILHelpers/ClusterHelper.h"
+#include "APRILHelpers/ClusterPropertiesHelper.h"
 
 #include "TMath.h"
 
 //FIXME
 HitKDTree caloHitsKDTree;
 
-namespace arbor_content
+namespace april_content
 {
 
   FragmentsFromIsoHitsMergingAlgorithm::FragmentsFromIsoHitsMergingAlgorithm()
@@ -81,8 +81,8 @@ namespace arbor_content
 			 std::cout << "-------> nearby fragments : " << pFragment->GetHadronicEnergy() << ", axis: " 
 				       << fragmentAxis.X() << ", " << fragmentAxis.Y() << ", " << fragmentAxis.Z() << ", angle: " << openAngle << std::endl;
 
-			 pFragment->SetCentroid(centroid);
-			 pFragment->SetAxis(axis);
+			 //pFragment->SetCentroid(centroid);
+			 //pFragment->SetAxis(axis);
 	  }
 
 	  for(pandora::ClusterList::iterator clusterIter = mainClusterList.begin(); clusterIter != mainClusterList.end(); ++clusterIter)
@@ -110,7 +110,7 @@ namespace arbor_content
 			  if(cluFragDirection.Mag() < 500.)
 		
 			  {
-				  nearbyFragments.insert(pFragment);
+				  nearbyFragments.push_back(pFragment);
 			  }
 		  }
 
@@ -124,11 +124,13 @@ namespace arbor_content
 
 		 std::cout << "=====> cluster : " << pCluster->GetHadronicEnergy() << std::endl;
 
+/*
 		 for(pandora::ClusterList::iterator fragIter = fragments.begin(); fragIter != fragments.end(); ++fragIter)
 		 {
 			 const pandora::Cluster* pFragment = *fragIter;
-		 
 		 }
+
+*/
 	  }
 
 	  return pandora::STATUS_CODE_SUCCESS;
@@ -160,7 +162,7 @@ namespace arbor_content
 			clusterIter != clusterIterEnd; ++clusterIter)
 	{
 		const pandora::Cluster *const pCluster = *clusterIter;
-		clusterList.insert(pCluster);
+		clusterList.push_back(pCluster);
 	}
 
 	std::cout << "cluster list " << listName << " size: " << clusterList.size() << std::endl;
@@ -181,11 +183,11 @@ namespace arbor_content
      // build the kd-tree of hits from the input clusters and save the map of hits to clusters
      for (const pandora::Cluster *const pCluster : *pClusterList)
      {   
-         pCluster->GetOrderedCaloHitList().GetCaloHitList(clusterHits);
+         pCluster->GetOrderedCaloHitList().FillCaloHitList(clusterHits);
 
          for (const pandora::CaloHit *const pCaloHit : clusterHits)
          {   
-             hit_list.insert(pCaloHit);
+             hit_list.push_back(pCaloHit);
          }   
 
          clusterHits.clear();

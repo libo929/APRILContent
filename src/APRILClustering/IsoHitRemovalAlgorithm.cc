@@ -6,16 +6,16 @@
 
 #include "Pandora/AlgorithmHeaders.h"
 
-#include "ArborClustering/IsoHitRemovalAlgorithm.h"
-#include "ArborUtility/MeanShift.h"
-#include "ArborUtility/ClusterShape.h"
+#include "APRILClustering/IsoHitRemovalAlgorithm.h"
+#include "APRILUtility/MeanShift.h"
+#include "APRILUtility/ClusterShape.h"
 
 using namespace pandora;
 
 //FIXME
 HitKDTree hitsKDTree;
 
-namespace arbor_content
+namespace april_content
 {
 
   IsoHitRemovalAlgorithm::IsoHitRemovalAlgorithm()
@@ -139,7 +139,7 @@ namespace arbor_content
 				      << " --|-- " << hitPos.GetX() << ", " << hitPos.GetY() << ", " << hitPos.GetZ() << std::endl;
 #endif
 
-			caloHitList.insert(caloHit);
+			caloHitList.push_back(caloHit);
 		}
 	
 		clusterHitsCollection.push_back(caloHitList);
@@ -168,7 +168,7 @@ namespace arbor_content
           continue;
 
 		//energyMissingHits += pCaloHit->GetHadronicEnergy();
-		isoHitList.insert(pCaloHit);
+		isoHitList.push_back(pCaloHit);
 
         this->SimpleMCParticleCaloHitListCollection(pCaloHit, mcParticleToCaloHitListMap);
       }
@@ -194,7 +194,7 @@ namespace arbor_content
 	{
 		const Cluster *const pCluster = *clusterIter;
 
-		clusterList.insert(pCluster);
+		clusterList.push_back(pCluster);
         this->SimpleMCParticleClusterCollection(pCluster, mcParticleToClusterMap);
 	}
 
@@ -214,11 +214,11 @@ namespace arbor_content
      // build the kd-tree of hits from the input clusters and save the map of hits to clusters
      for (const Cluster *const pCluster : *pClusterList)
      {   
-         pCluster->GetOrderedCaloHitList().GetCaloHitList(clusterHits);
+         pCluster->GetOrderedCaloHitList().FillCaloHitList(clusterHits);
 
          for (const CaloHit *const pCaloHit : clusterHits)
          {   
-             hit_list.insert(pCaloHit);
+             hit_list.push_back(pCaloHit);
          }   
 
          clusterHits.clear();
@@ -278,11 +278,11 @@ namespace arbor_content
      // build the kd-tree of hits from the input clusters and save the map of hits to clusters
      for (const Cluster *const pCluster : *pClusterList)
      {   
-         pCluster->GetOrderedCaloHitList().GetCaloHitList(clusterHits);
+         pCluster->GetOrderedCaloHitList().FillCaloHitList(clusterHits);
 
          for (const CaloHit *const pCaloHit : clusterHits)
          {   
-             hit_list.insert(pCaloHit);
+             hit_list.push_back(pCaloHit);
              hits_to_clusters.emplace(pCaloHit, pCluster);
          }   
 
@@ -370,12 +370,12 @@ namespace arbor_content
     if (mcParticleToCaloHitListMap.end() == iter)
     {
       CaloHitList *const pCaloHitList = new CaloHitList();
-      pCaloHitList->insert(pCaloHitToAdd);
+      pCaloHitList->push_back(pCaloHitToAdd);
       (void) mcParticleToCaloHitListMap.insert(MCParticleToCaloHitListMap::value_type(pMCParticle, pCaloHitList));
     }
     else
     {
-      iter->second->insert(pCaloHitToAdd);
+      iter->second->push_back(pCaloHitToAdd);
     }
   }
 

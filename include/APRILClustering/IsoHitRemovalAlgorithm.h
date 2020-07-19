@@ -1,5 +1,5 @@
 /**
- *  @file   ArborContent/include/ArborCheating/IsoHitRemovalAlgorithm.h
+ *  @file   APRILContent/include/APRILCheating/IsoHitRemovalAlgorithm.h
  * 
  *  @brief  Header file for the cheating clustering algorithm class.
  * 
@@ -11,13 +11,13 @@
 #define ISOHITREMOVALALGORITHM_H 1
 
 #include "Pandora/Algorithm.h"
-#include "ArborUtility/KDTreeLinkerAlgoT.h"
+#include "APRILUtility/KDTreeLinkerAlgoT.h"
 
-typedef arbor_content::KDTreeLinkerAlgo<const pandora::CaloHit*, 4> HitKDTree;
-typedef arbor_content::KDTreeNodeInfoT<const pandora::CaloHit*, 4> HitKDNode;
+typedef april_content::KDTreeLinkerAlgo<const pandora::CaloHit*, 4> HitKDTree;
+typedef april_content::KDTreeNodeInfoT<const pandora::CaloHit*, 4> HitKDNode;
 typedef map<const pandora::CaloHit*, const pandora::Cluster*> HitsToClustersMap;
 
-namespace arbor_content
+namespace april_content
 {
 
 /**

@@ -6,11 +6,11 @@
  *  $Log: $
  */
 
-#include "ArborUtility/KDTreeLinkerToolsT.h"
+#include "APRILUtility/KDTreeLinkerToolsT.h"
 
 using namespace std;
 
-namespace arbor_content
+namespace april_content
 {
 
 std::pair<float, float> minmax(const float a, const float b)

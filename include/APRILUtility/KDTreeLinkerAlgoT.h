@@ -8,11 +8,11 @@
 #ifndef LC_KD_TREE_LINKER_ALGO_TEMPLATED_H
 #define LC_KD_TREE_LINKER_ALGO_TEMPLATED_H
 
-#include "ArborUtility/KDTreeLinkerToolsT.h"
+#include "APRILUtility/KDTreeLinkerToolsT.h"
 
 #include <vector>
 
-namespace arbor_content
+namespace april_content
 {
 
 /**

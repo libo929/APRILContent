@@ -1,5 +1,5 @@
 /**
- *  @file   ArborContent/include/ArborCheating/IsoHitClusteringAlgorithm.h
+ *  @file   APRILContent/include/APRILCheating/IsoHitClusteringAlgorithm.h
  *
  *  This algorithm is to remove part of isolated hits by clustering them
  * 
@@ -9,9 +9,9 @@
 #define ISOHITCLUSTERINGALGORITHM_H 1
 
 #include "Pandora/Algorithm.h"
-#include "ArborUtility/KDTreeLinkerAlgoT.h"
+#include "APRILUtility/KDTreeLinkerAlgoT.h"
 
-namespace arbor_content
+namespace april_content
 {
 
 /**

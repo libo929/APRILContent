@@ -6,12 +6,12 @@
 
 #include "Pandora/AlgorithmHeaders.h"
 
-#include "ArborClustering/IsoHitClusteringAlgorithm.h"
-#include "ArborUtility/MeanShift.h"
+#include "APRILClustering/IsoHitClusteringAlgorithm.h"
+#include "APRILUtility/MeanShift.h"
 
 using namespace pandora;
 
-namespace arbor_content
+namespace april_content
 {
 
   IsoHitClusteringAlgorithm::IsoHitClusteringAlgorithm()
@@ -95,7 +95,7 @@ namespace arbor_content
 				      << " --|-- " << hitPos.GetX() << ", " << hitPos.GetY() << ", " << hitPos.GetZ() << std::endl;
 #endif
 
-			caloHitList.insert(caloHit);
+			caloHitList.push_back(caloHit);
 		}
 	
 		clusterHitsCollection.push_back(caloHitList);
@@ -124,7 +124,7 @@ namespace arbor_content
           continue;
 
 		//energyMissingHits += pCaloHit->GetHadronicEnergy();
-		isoHitList.insert(pCaloHit);
+		isoHitList.push_back(pCaloHit);
       }
       catch (StatusCodeException &)
       {

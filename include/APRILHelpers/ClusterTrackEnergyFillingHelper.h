@@ -13,7 +13,7 @@
 
 namespace pandora { class Algorithm; class CaloHit; class Track; }
 
-namespace arbor_content
+namespace april_content
 {
 	class ClusterTrackEnergyFillingHelper
 	{

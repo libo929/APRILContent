@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "ArborUtility/ClusterShape.h"
+#include "APRILUtility/ClusterShape.h"
 
 #include "TMath.h"
 #include "TH1F.h"
@@ -20,7 +20,7 @@ void ClusterShape::FillHits()
 	const pandora::OrderedCaloHitList& orderedCaloHitList = m_cluster->GetOrderedCaloHitList();
 	pandora::CaloHitList caloHitList;
 
-	orderedCaloHitList.GetCaloHitList(caloHitList);
+	orderedCaloHitList.FillCaloHitList(caloHitList);
 
     for(pandora::CaloHitList::iterator iter = caloHitList.begin(); iter != caloHitList.end(); ++iter)
     {

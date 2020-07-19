@@ -68,16 +68,10 @@ namespace april_content
       // check for chi2, energy excess and asymmetric cluster
       if( (chi*chi < m_minChi2ToRunReclustering || chi < 0.f)  || ((*trackList.begin())->GetEnergyAtDca() < m_minTrackMomentum))
         continue;
-#if 0
-      // I don't understand the reason we have this statement, and it will lose energy.
-      // Let us comment out it currently.
+
       // check for clusters that leave the detector
       if(ClusterHelper::IsClusterLeavingDetector(this->GetPandora(), pCluster))
-      {
-        std::cout << "*********** Cluster leaving detector ..." << std::endl; 
         continue;
-      }
-#endif
 
       // prepare clusters and tracks for reclustering
       pandora::ClusterList reclusterClusterList;
@@ -99,8 +93,6 @@ namespace april_content
         std::string reclusterClusterListName;
         PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, APRILContentApi::RunReclusteringAlgorithm(*this,
             *clusteringAlgIter, pReclusterClusterList, reclusterClusterListName));
-            
-        //std::cout << "reclusterListName: " << reclusterClusterListName << std::endl;
 
         if(pReclusterClusterList->empty())
           continue;
