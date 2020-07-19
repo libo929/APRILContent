@@ -73,7 +73,7 @@ private:
     unsigned int                m_minpDBSCAN;
 	float                       m_maxTransverseDistanceFine;
 	float                       m_maxTransverseDistanceCoarse;
-	unsigned int                m_maxPseudoLayerConnection;
+	//unsigned int              m_maxPseudoLayerConnection;
 	bool                        m_connectOnlyAvailable;
 	bool                        m_shouldUseIsolatedHits;
 	bool                        m_shouldDiscriminateConnectedHits;
