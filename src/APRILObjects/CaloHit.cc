@@ -64,7 +64,7 @@ namespace april_content
 
   CaloHit::~CaloHit()
   {
-    PANDORA_THROW_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, APRILContentApi::RemoveAndDeleteAllConnections(this));
+    APRILContentApi::RemoveAndDeleteAllConnections(this);
     delete m_pCaloHitMetaData;
   }
 
