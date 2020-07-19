@@ -1,2 +1,2 @@
 # APRILContent
-Algorithm of Particle Reconstruction for ILC - implementation with PandoraSDK
+Algorithm of Particle Reconstruction for the ILC - implementation with PandoraSDK
