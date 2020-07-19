@@ -43,38 +43,21 @@ MESSAGE( STATUS "INSTALL_DOC : ${INSTALL_DOC}" )
 INCLUDE_DIRECTORIES( ./include )
 
 SET( INPUT_DIRS 
-<<<<<<< HEAD
-     ArborApi ArborObjects ArborCheating ArborClustering ArborHelpers ArborMonitoring ArborPfoConstruction ArborParticleId 
-     ArborPlugins ArborReclustering ArborTools ArborTopologicalAssociation ArborTrackClusterAssociation ArborUtility )
-
-FILE(GLOB INPUT_DIR_INCS ./include/*.h)
-SOURCE_GROUP("Header files" FILES ${INPUT_DIR_INCS} )
-LIST(APPEND ArborContent_INCS ${INPUT_DIR_INCS})
-=======
      APRILApi APRILObjects APRILCheating APRILClustering APRILHelpers APRILMonitoring APRILPfoConstruction APRILParticleId 
      APRILPlugins APRILReclustering APRILTools APRILTopologicalAssociation APRILTrackClusterAssociation APRILUtility )
 
 FILE(GLOB INPUT_DIR_INCS ./include/*.h)
 SOURCE_GROUP("Header files" FILES ${INPUT_DIR_INCS} )
 LIST(APPEND APRILContent_INCS ${INPUT_DIR_INCS})
->>>>>>> newDev
 
 FOREACH( INPUT_DIR ${INPUT_DIRS} )
     FILE(GLOB_RECURSE INPUT_DIR_INCS ./include/${INPUT_DIR}/*.h)
     SOURCE_GROUP("Header files\\${INPUT_DIR}" FILES ${INPUT_DIR_INCS} )
-<<<<<<< HEAD
-    LIST(APPEND ArborContent_INCS ${INPUT_DIR_INCS})
-
-    FILE (GLOB_RECURSE INPUT_DIR_SRCS ./src/${INPUT_DIR}/*.cc )
-    SOURCE_GROUP("Source files\\${INPUT_DIR}" FILES ${INPUT_DIR_SRCS} )
-    LIST(APPEND ArborContent_SRCS ${INPUT_DIR_SRCS})
-=======
     LIST(APPEND APRILContent_INCS ${INPUT_DIR_INCS})
 
     FILE (GLOB_RECURSE INPUT_DIR_SRCS ./src/${INPUT_DIR}/*.cc )
     SOURCE_GROUP("Source files\\${INPUT_DIR}" FILES ${INPUT_DIR_SRCS} )
     LIST(APPEND APRILContent_SRCS ${INPUT_DIR_SRCS})
->>>>>>> newDev
 ENDFOREACH()
 
 ### C++11 check #############################################################
@@ -101,11 +84,7 @@ IF( NOT COMPILER_SUPPORTS_CXX_FLAGS )
 ENDIF()
 
 if(APPLE)
-<<<<<<< HEAD
-   SET( CMAKE_CXX_FLAGS "-Wall -Wextra -pedantic -Wno-long-long -Wno-sign-compare -Wshadow -fno-strict-aliasing ${CMAKE_CXX_FLAGS}" )
-=======
    SET( CMAKE_CXX_FLAGS "-Wall -Wextra -pedantic -Wno-long-long -Wno-sign-compare -fno-strict-aliasing ${CMAKE_CXX_FLAGS}" )
->>>>>>> newDev
 else()
    SET( CMAKE_CXX_FLAGS "-Wall -Wextra -ansi -pedantic -Wno-long-long -Wno-sign-compare -Wshadow -fno-strict-aliasing ${CMAKE_CXX_FLAGS}" )
 endif()
@@ -161,11 +140,7 @@ ENDIF()
 ### LIBRARY #################################################################
 
 # add library
-<<<<<<< HEAD
-ADD_LIBRARY( ${PROJECT_NAME} SHARED ${ArborContent_SRCS} ${ArborContent_INCS})
-=======
 ADD_LIBRARY( ${PROJECT_NAME} SHARED ${APRILContent_SRCS} ${APRILContent_INCS})
->>>>>>> newDev
 SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES VERSION ${${PROJECT_NAME}_VERSION} SOVERSION ${${PROJECT_NAME}_SOVERSION})
 
 IF( APRIL_PARALLEL )
