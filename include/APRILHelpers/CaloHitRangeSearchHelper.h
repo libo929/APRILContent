@@ -55,7 +55,7 @@ public:
 	// build 
     static pandora::StatusCode FillMatixByPoints(const std::vector<pandora::CartesianVector>& points, arma::mat& caloHitsMatrix);
 
-    static pandora::StatusCode BuildRangeSearch(const pandora::CaloHitList *const pCaloHitList);
+    static pandora::StatusCode BuildRangeSearch(const pandora::CaloHitList *const pCaloHitList, bool reBuild = false);
 	
     static pandora::StatusCode BuildHitCollectionOfLayers(const pandora::CaloHitList *const pCaloHitList);
 

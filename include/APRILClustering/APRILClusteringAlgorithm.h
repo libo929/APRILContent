@@ -96,6 +96,7 @@ private:
 
 	bool                              m_allowSingleHitClusters;    ///< Whether to allow single calo hit clusters
 	//bool                            m_useMultithread;            ///< Whether to use multithreading with ecal-hcal-muon tools
+	bool                              m_reBuild;
     bool                              m_useAsIndependent;          ///< Whether to use this algorithm as a mother algorithm
     
     // It seems that we can not add any member of type ConnectorAlgorithmToolVector or string more (?), otherwise it will crash.

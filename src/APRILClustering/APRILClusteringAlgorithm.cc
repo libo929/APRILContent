@@ -100,14 +100,14 @@ namespace april_content
 	std::cout << "  ---> hcalCaloHitList: " << m_hcalCaloHitList.size() << std::endl;
 	std::cout << "  ---> muonCaloHitList: " << m_muonCaloHitList.size() << std::endl;
 
-	CaloHitRangeSearchHelper::BuildRangeSearch(pCaloHitList);
+	CaloHitRangeSearchHelper::BuildRangeSearch(pCaloHitList, m_reBuild);
 	CaloHitRangeSearchHelper::BuildHitCollectionOfLayers(pCaloHitList);
 	CaloHitRangeSearchHelper::BuildHitCollectionOfEcalLayers(&m_ecalCaloHitList);
 	CaloHitRangeSearchHelper::BuildHitCollectionOfHcalLayers(&m_hcalCaloHitList);
 	CaloHitRangeSearchHelper::BuildHitCollectionOfMuonLayers(&m_muonCaloHitList);
 
 	//
-	CaloHitNeighborSearchHelper::BuildNeighborSearch(pCaloHitList);
+	CaloHitNeighborSearchHelper::BuildNeighborSearch(pCaloHitList, m_reBuild);
 
 	std::cout << "ordered hit layer size: " << std::endl;
 	std::cout << " total: " << CaloHitRangeSearchHelper::GetOrderedCaloHitList()->size() << std::endl;
@@ -235,6 +235,10 @@ namespace april_content
 
       m_toolList.push_back(pTool);
     }
+
+    m_reBuild = false;
+    PANDORA_RETURN_RESULT_IF_AND_IF(pandora::STATUS_CODE_SUCCESS, pandora::STATUS_CODE_NOT_FOUND, !=, pandora::XmlHelper::ReadValue(xmlHandle,
+        "RebuildSearchingTable", m_reBuild));
 
     m_useAsIndependent = false;
     PANDORA_RETURN_RESULT_IF_AND_IF(pandora::STATUS_CODE_SUCCESS, pandora::STATUS_CODE_NOT_FOUND, !=, pandora::XmlHelper::ReadValue(xmlHandle,

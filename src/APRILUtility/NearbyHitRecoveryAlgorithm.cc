@@ -601,12 +601,18 @@ pandora::StatusCode NearbyHitRecoveryAlgorithm::MakeClusterHitsAssociation(Clust
 		   for(auto& caloHit : neighborHits)
 		   {
 			   auto& hitPos = caloHit->GetPositionVector();
-               const april_content::CaloHit *const pAPRILCaloHit = dynamic_cast<const april_content::CaloHit *const>(caloHit);
-			   //std::cout << "     the nearby hit distance: " << (hitPos - testPosition).GetMagnitude() 
+               const april_content::CaloHit *const pAPRILCaloHit = reinterpret_cast<const april_content::CaloHit *const>(caloHit);
+
+			   //float dist = (hitPos - testPosition).GetMagnitude();
+			   //if(!isfinite(dist)) continue;
+			   if(pAPRILCaloHit->GetMother() == nullptr) continue;
+
+			   //std::cout << "     the nearby hit distance: " << dist
 				 //  << ", pos: " << hitPos.GetX() << ", " << hitPos.GetY() << ", " << hitPos.GetZ() 
 				   //<< ", cluster: " << pAPRILCaloHit->GetMother() << std::endl;
 
 			   if(pAPRILCaloHit != nullptr && clusterToAdd == nullptr)
+			   //if(pAPRILCaloHit != nullptr && clusterToAdd == nullptr)
 			   {
 				   clusterToAdd = pAPRILCaloHit->GetMother();
 				   hitsDistance = (hitPos - testPosition).GetMagnitude();
@@ -722,13 +728,23 @@ pandora::StatusCode NearbyHitRecoveryAlgorithm::AddHitToCluster(ClusterCaloHitLi
 		const auto& cluster = clusterIt->first;
 		const auto& caloHitList = clusterIt->second;
 
+		if(cluster==0) continue;
 		if(caloHitList.empty()) continue;
 
 		const pandora::CaloHitList& hitsAddToCluster = caloHitList;
+		//std::cout << "  ^^^^ : " << cluster << ", cluster size:" << hitsAddToCluster.size() << std::endl;
+
+#if 0
+		for(auto& hit : caloHitList)
+		{
+			std::cout << "  --- hit: " << hit << std::endl;
+		}
+#endif
 
         PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, APRILContentApi::AddToCluster(*this, cluster, &hitsAddToCluster));
 	}
 
+#if 0
 	// check 
     const pandora::CaloHitList *pCaloHitList = nullptr; 
     PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, PandoraContentApi::GetCurrentList(*this, pCaloHitList));
@@ -747,6 +763,7 @@ pandora::StatusCode NearbyHitRecoveryAlgorithm::AddHitToCluster(ClusterCaloHitLi
 	}
 
 	std::cout << "===unClusteredHits size: " << unClusteredHits.size() << std::endl;
+#endif
 
     return pandora::STATUS_CODE_SUCCESS;
 }

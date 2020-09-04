@@ -102,9 +102,9 @@ namespace april_content
 
   //--------------------------------------------------------------------------------------------------------------------
 
-  pandora::StatusCode CaloHitNeighborSearchHelper::BuildNeighborSearch(const pandora::CaloHitList *const pCaloHitList)
+  pandora::StatusCode CaloHitNeighborSearchHelper::BuildNeighborSearch(const pandora::CaloHitList *const pCaloHitList, bool reBuild)
   {
-	  if(pCaloHitList != m_pCaloHitList)
+	  if(reBuild || pCaloHitList != m_pCaloHitList )
 	  {
 		  //std::cout << "build new matrix for NeighborSearch..." << std::endl;
 		  m_caloHitVector.clear();

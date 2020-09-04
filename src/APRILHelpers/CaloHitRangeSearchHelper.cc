@@ -145,9 +145,9 @@ namespace april_content
 
   //--------------------------------------------------------------------------------------------------------------------
 
-  pandora::StatusCode CaloHitRangeSearchHelper::BuildRangeSearch(const pandora::CaloHitList *const pCaloHitList)
+  pandora::StatusCode CaloHitRangeSearchHelper::BuildRangeSearch(const pandora::CaloHitList *const pCaloHitList, bool reBuild)
   {
-	  if(pCaloHitList != m_pCaloHitList)
+	  if(reBuild || pCaloHitList != m_pCaloHitList)
 	  {
 		  //std::cout << "build new matrix..." << std::endl;
 		  m_caloHitVector.clear();
