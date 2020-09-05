@@ -79,6 +79,8 @@ namespace april_content
 
 	//std::cout << "# hits having no connector: " << seedHits.size() << std::endl;
 
+	if(seedHits.empty()) return pandora::STATUS_CODE_SUCCESS;
+
 	std::vector<pandora::CaloHitVector> hitsForCluster;
 
 	if(m_metricType > 0)

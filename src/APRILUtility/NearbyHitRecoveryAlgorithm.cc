@@ -675,7 +675,7 @@ pandora::StatusCode NearbyHitRecoveryAlgorithm::MakeClusterHitsAssociation(Clust
 		}
 	}
 
-	std::cout << "===unClusteredHits size: " << nUnclusteredHits << std::endl;
+	//std::cout << "===unClusteredHits size: " << nUnclusteredHits << std::endl;
 
     return pandora::STATUS_CODE_SUCCESS;
 }
