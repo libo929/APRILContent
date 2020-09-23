@@ -91,6 +91,8 @@ private:
 	float m_meanDensity;
 	float m_surroundingEnergy;  
 
+	bool m_useMVA;
+
 };
 
 inline pandora::Algorithm *NearbyHitRecoveryAlgorithm::Factory::CreateAlgorithm() const

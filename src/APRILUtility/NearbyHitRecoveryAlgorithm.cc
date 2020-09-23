@@ -34,7 +34,7 @@ NearbyHitRecoveryAlgorithm::~NearbyHitRecoveryAlgorithm()
 
 pandora::StatusCode NearbyHitRecoveryAlgorithm::Initialize()
 {
-	if(m_reader==nullptr) 
+	if(m_useMVA && m_reader==nullptr) 
 	{
         m_reader = new TMVA::Reader( "!Color:!Silent" ); 
         //m_reader = new TMVA::Reader(); 
@@ -65,9 +65,10 @@ pandora::StatusCode NearbyHitRecoveryAlgorithm::Initialize()
 			m_reader = nullptr;
 			//return pandora::STATUS_CODE_NOT_INITIALIZED;
         }
+
+	    std::cout << "reader: " << m_reader << std::endl;
 	}
 
-	std::cout << "reader: " << m_reader << std::endl;
 	return pandora::STATUS_CODE_SUCCESS;
 }
 
@@ -783,6 +784,9 @@ pandora::StatusCode NearbyHitRecoveryAlgorithm::ReadSettings(const pandora::TiXm
     m_pAlgorithmTool = nullptr;
     PANDORA_RETURN_RESULT_IF_AND_IF(pandora::STATUS_CODE_SUCCESS, pandora::STATUS_CODE_NOT_FOUND, !=, 
         pandora::XmlHelper::ProcessAlgorithmTool(*this, xmlHandle, "CaloHitMergingTool", m_pAlgorithmTool));
+
+    m_useMVA = false;
+    PANDORA_RETURN_RESULT_IF_AND_IF(pandora::STATUS_CODE_SUCCESS, pandora::STATUS_CODE_NOT_FOUND, !=, pandora::XmlHelper::ReadValue(xmlHandle, "UseMVA", m_useMVA));
 
     return pandora::STATUS_CODE_SUCCESS;
 }
