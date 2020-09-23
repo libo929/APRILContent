@@ -75,6 +75,8 @@ namespace april_content
     bool            m_replaceCurrentClusterList;    ///< Whether to subsequently use the new photon cluster list as the "current" list
 
 	static TMVA::Reader*           m_reader;
+	bool            m_useMVA;
+
   };
 
   //------------------------------------------------------------------------------------------------------------------------------------------

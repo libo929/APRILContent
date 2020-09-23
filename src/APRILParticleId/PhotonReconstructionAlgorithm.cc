@@ -45,7 +45,7 @@ namespace april_content
   pandora::StatusCode PhotonReconstructionAlgorithm::Run()
   {
 	  // book MVA
-	if(m_reader==NULL) 
+	if(m_useMVA && m_reader==NULL) 
 	{
         m_reader = new TMVA::Reader( "!Color:!Silent" ); 
 
@@ -270,6 +270,9 @@ namespace april_content
 
     PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, pandora::XmlHelper::ReadValue(xmlHandle,
         "ReplaceCurrentClusterList", m_replaceCurrentClusterList));
+
+    m_useMVA = false;
+    PANDORA_RETURN_RESULT_IF_AND_IF(pandora::STATUS_CODE_SUCCESS, pandora::STATUS_CODE_NOT_FOUND, !=, pandora::XmlHelper::ReadValue(xmlHandle, "UseMVA", m_useMVA));
 
     return pandora::STATUS_CODE_SUCCESS;
   }
