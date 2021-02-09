@@ -184,7 +184,7 @@ namespace april_content
           reclusterList.push_back(pReclusterCluster);
 
           ReclusterResult reclusterResult;
-          if(pandora::STATUS_CODE_SUCCESS != ReclusterHelper::ExtractReclusterResults(this->GetPandora(), *pReclusterClusterList, reclusterResult))
+          if(pandora::STATUS_CODE_SUCCESS != ReclusterHelper::ExtractReclusterResults(this->GetPandora(), pReclusterClusterList, reclusterResult))
             continue;
 
           const float newChi(reclusterResult.GetChi());

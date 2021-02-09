@@ -164,7 +164,7 @@ public:
      *  @param  clusterList the newly created clusters after a reclustering step
      *  @param  reclusterResult the recluster results
      */
-    static pandora::StatusCode ExtractReclusterResults(const pandora::Pandora &pandora, const pandora::ClusterList &clusterList, ReclusterResult &reclusterResult);
+    static pandora::StatusCode ExtractReclusterResults(const pandora::Pandora &pandora, const pandora::ClusterList* clusterList, ReclusterResult &reclusterResult);
 
     /**
      *  @brief  Create a separated tree cluster from a seed calo hit contained in an original cluster.

@@ -143,15 +143,15 @@ namespace april_content
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  pandora::StatusCode ReclusterHelper::ExtractReclusterResults(const pandora::Pandora &pandora, const pandora::ClusterList &clusterList, ReclusterResult &reclusterResult)
+  pandora::StatusCode ReclusterHelper::ExtractReclusterResults(const pandora::Pandora &pandora, const pandora::ClusterList* clusterList, ReclusterResult &reclusterResult)
   {
-    if(clusterList.empty())
+    if(clusterList == nullptr || clusterList->empty())
       return pandora::STATUS_CODE_INVALID_PARAMETER;
 
     unsigned int nDof(0);
     float chi(0.f), chi2(0.f), neutralEnergy(0.f), chargedEnergy(0.f), chiWorstAssociation(0.f);
 
-    for(pandora::ClusterList::const_iterator iter = clusterList.begin(), endIter = clusterList.end() ; endIter != iter ; ++iter)
+    for(pandora::ClusterList::const_iterator iter = clusterList->begin(), endIter = clusterList->end() ; endIter != iter ; ++iter)
     {
       const pandora::Cluster *const pCluster = *iter;
 

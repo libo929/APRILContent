@@ -95,6 +95,8 @@
 #include "APRILReclustering/EnergyExcessReclusteringAlgorithm.h"
 #include "APRILReclustering/MissingEnergyReclusteringAlgorithm.h"
 #include "APRILReclustering/SplitTrackReclusteringAlgorithm.h"
+#include "APRILReclustering/ResolveTrackAssociationsAlg.h"
+#include "APRILReclustering/ForcedClusteringAlgorithm.h"
 #include "APRILReclustering/ForceSplitTrackAssociationsAlg.h"
 
 #include "APRILTools/ConnectorCleaningTool.h"
@@ -197,6 +199,8 @@ public:
     d("MissingEnergyReclustering",           april_content::MissingEnergyReclusteringAlgorithm::Factory) \
     d("SplitTrackReclustering",              april_content::SplitTrackReclusteringAlgorithm::Factory) \
     d("ForceSplitTrackAssociations",         april_content::ForceSplitTrackAssociationsAlg::Factory) \
+    d("ResolveTrackAssociations",            april_content::ResolveTrackAssociationsAlg::Factory) \
+    d("ForcedClustering",                    april_content::ForcedClusteringAlgorithm::Factory) \
     d("TopologicalAssociationParent",        april_content::TopologicalAssociationParentAlgorithm::Factory) \
     d("PointingClusterAssociation",          april_content::PointingClusterAssociationAlgorithm::Factory) \
     d("PointingClusterAssociationNew",       april_content::PointingClusterAssociationNewAlgorithm::Factory) \
